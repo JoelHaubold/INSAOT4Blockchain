@@ -1,0 +1,13 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/components.html :: headerfiles"> </head>
+<body>
+<div th:replace="fragments/components.html :: header"> </div>
+<div class="pt-5 container">
+<h1>Hello !</h1>
+<p>Welcome to <span th:text="${appName}">Our App</span></p>
+</div>
+
+<div th:replace="fragments/components.html :: scripts"> </div>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/components.html :: headerfiles">
+</head>
+<body>
+<div th:replace="fragments/components.html :: header"> </div>
+<div class="container pt-4">
+
+    <ul class="nav nav-tabs bg-dark" role="tablist">
+        <li class="nav-item bg-dark" th:classappend="${tab} == 'home' ? 'active show ' : ''" role="presentation">
+            <a class="nav-link text-light" role="tab"  href="/account">Info</a>
+        </li>
+        <li class="nav-item bg-dark" th:classappend="${tab} == 'account' ? 'active show ' : ''" role="presentation">
+            <a class="nav-link text-light" role="tab"  href="/account/details">Account</a>
+        </li>
+        <li class="nav-item bg-dark" th:classappend="${tab} == 'numbers' ? 'active show ' : ''" role="presentation">
+            <a class="nav-link text-light" role="tab"  href="/account/numbers"> My phone numbers</a>
+        </li>
+        <li class="nav-item bg-dark" th:classappend="${tab} == 'transactions' ? 'active show ' : ''" role="presentation">
+            <a class="nav-link text-light" role="tab"  href="/account/transactions">My transactions</a>
+        </li>
+        <li class="nav-item bg-dark" th:classappend="${tab} == 'balance' ? 'active show ' : ''" role="presentation">
+            <a class="nav-link text-light" role="tab"  href="/account/balance">My balance </a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="home" class="tab-pane fade" th:classappend="${tab} == 'home' ? 'active show' : ''">
+            <div class="pt-5">
+                <p>Be careful! Each click costs you money :(</p>
+            </div>
+        </div>
+        <div id="account" class="tab-pane fade" th:classappend="${tab} == 'account' ? 'active show' : ''">
+            <div class="pt-5">
+                <p th:text="'Account address: ' + ${accountAddress}"></p>
+                <p th:text="'Nickname: ' + ${nickname}"></p>
+            </div>
+        </div>
+        <div id="numbers" class="tab-pane fade" th:classappend="${tab} == 'numbers' ? 'active show' : ''">
+            <div class="pt-5">
+                <table class="table table-dark">
+                    <thead>
+                    <tr>
+                        <th scope="col">Nr</th>
+                        <th scope="col">First</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="number: ${phoneNumbers}">
+                        <th scope="row" th:text="${number}">1</th>
+                        <td>Some info</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="transactions" class="tab-pane fade" th:classappend="${tab} == 'transactions' ? 'active show' : ''">
+            <div class="pt-5">
+                <table class="table table-dark">
+                    <thead>
+                    <tr>
+                        <th scope="col">Nr</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">More info</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="transaction: ${transactions}">
+                        <th scope="row" th:text="${transaction}">1</th>
+                        <td>Some info</td>
+                        <td>Some info</td>
+                        <td>Some info</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="balance" class="tab-pane fade" th:classappend="${tab} == 'balance' ? 'active show' : ''">
+            <div class="pt-5">
+                <p th:text="'My balance: ' + ${balance}"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/components.html :: scripts"> </div>
+</body>
+</html>
