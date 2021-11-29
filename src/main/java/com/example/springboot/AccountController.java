@@ -62,5 +62,4 @@ public class AccountController {
 
 		return "account";
 	}
-
 }
