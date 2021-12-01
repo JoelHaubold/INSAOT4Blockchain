@@ -1,8 +1,8 @@
 pragma solidity ^0.8.3;
-contract numberService { //TODO: Currently not collecting any fees
+contract numberService { //TODO: Fix bugs lel
     //Contract Owner
     address payable owner;
-    uint256 ownerBalance;
+    uint256 ownerBalance; //TODO: Currently not collecting any fees (Besides number /nickname selling)
 
     //User accounts
     struct account {
