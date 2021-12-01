@@ -1,8 +1,8 @@
 pragma solidity ^0.8.3;
-contract numberService { //TODO: Fix bugs lel
+contract numberService { //TODO: Currently not collecting any fees
     //Contract Owner
     address payable owner;
-    uint256 ownerBalance; //TODO: Currently not collecting any fees (Besides number /nickname selling)
+    uint256 ownerBalance;
 
     //User accounts
     struct account {
@@ -48,6 +48,17 @@ contract numberService { //TODO: Fix bugs lel
 
     }
 
+    function checkOwnerOld(string calldata number) view external returns (string memory) { //TODO: Maybe give suspected owner as parameter and return boolean?
+        address numberHolder = number2owner[number];
+        if(numberHolder == address(0x0)){
+            return "Unowned";
+        } else if(keccak256(bytes(owner2account[numberHolder].number2nickname[number]))!=keccak256("")){
+            return owner2account[numberHolder].number2nickname[number];
+        } else {
+            return string(abi.encodePacked(numberHolder));
+        }
+    }
+
     function checkOwner(string calldata number) view external returns (string memory) {
         address numberHolder = number2owner[number];
         if(numberHolder == address(0x0)){
@@ -55,11 +66,24 @@ contract numberService { //TODO: Fix bugs lel
         } else if(keccak256(bytes(owner2account[numberHolder].number2nickname[number]))!=keccak256("")){
             return owner2account[numberHolder].number2nickname[number];
         } else {
-            return string(abi.encodePacked(owner));
+            return toString(abi.encodePacked(numberHolder));
         }
     }
 
-    function seeTransactions() view external { //TODO: Blockchain already does this for us ??
+    function toString(bytes memory data) internal pure returns(string memory) { //Help function for check owner
+        bytes memory alphabet = "0123456789abcdef"; //Hexa alphabet to translate bits to string
+
+        bytes memory str = new bytes(2 + data.length * 2);
+        str[0] = "0";
+        str[1] = "x";
+        for (uint i = 0; i < data.length; i++) {
+            str[2+i*2] = alphabet[uint(uint8(data[i] >> 4))];
+            str[3+i*2] = alphabet[uint(uint8(data[i] & 0x0f))];
+        }
+        return string(str);
+    }
+
+    function seeTransactions() view external { //TODO: Blockchain already does this for us?
 
     }
 
@@ -89,8 +113,8 @@ contract numberService { //TODO: Fix bugs lel
             require(msg.value == costOfFreeNumber, "Trying to buy a free number, with an inadequate amount of ether");
             receiveNumber(msg.sender, number);
             ownerBalance += costOfFreeNumber;
-        } else if(number2listing[number].owner == address(0x0)) {
-            require(msg.value == number2listing[number].price);
+        } else if(number2listing[number].owner != address(0x0)) {
+            require(msg.value == number2listing[number].price,"Inadequate price for listed number");
             address donor = number2listing[number].owner;
             transferNumber(msg.sender, donor, number, msg.value);
         } else {
