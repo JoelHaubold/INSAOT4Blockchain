@@ -2,6 +2,7 @@ pragma solidity ^0.8.3;
 contract numberService { //TODO: Currently not collecting any fees
     //Contract Owner
     address payable owner;
+    uint256 ownerBalance;
 
     //User accounts
     struct account {
@@ -16,29 +17,29 @@ contract numberService { //TODO: Currently not collecting any fees
 
     // Marketplace
     struct listingInformation {
-        uint256 price;
         address owner;
+        uint256 price;
     }
     mapping(string=>listingInformation) number2listing;
 
     uint costOfFreeNumber = 1;
 
     constructor () public {
-        owner = msg.sender;
+        owner = payable(msg.sender);
     }
 
-    function receiveNumber(address receiver, string number) private {
+    function receiveNumber(address receiver, string memory number) private {
         number2owner[number] = receiver;
         owner2account[receiver].ownedNumbers.push(number);
     }
 
-    function transferNumber(address receiver, address donor, string number, uint256 pay) private {
+    function transferNumber(address receiver, address donor, string calldata number, uint256 pay) private {
         number2owner[number] = receiver;
-        string[] donorNumbers = owner2account[donor].ownedNumbers;
+        string[] memory donorNumbers = owner2account[donor].ownedNumbers;
         for (uint i = 0; i < donorNumbers.length - 1; i++) {
-            if(donorNumbers[i] == number){
+            if(keccak256(bytes(donorNumbers[i])) == keccak256(bytes(number))){
                 donorNumbers[i] = donorNumbers[donorNumbers.length-1];
-                donorNumbers.pop();
+                delete donorNumbers[donorNumbers.length - 1];
             }
         }
         owner2account[receiver].ownedNumbers.push(number);
@@ -46,9 +47,9 @@ contract numberService { //TODO: Currently not collecting any fees
 
     }
 
-    function checkOwner(string number) view external returns (string) {
-        if(number2owner[number] == 0x0){
-            return "Unowned";
+    function checkOwner(string calldata number) view external returns (address) {
+        if(number2owner[number] == address(0x0)){
+            return address(0x0);
         }
         return owner; //TODO: Look up nicknames
     }
@@ -57,31 +58,36 @@ contract numberService { //TODO: Currently not collecting any fees
 
     }
 
-    function seeNumbers() view external {
-
+    function seeOwnedNumbers() view external returns (string[] memory) {
+        return owner2account[msg.sender].ownedNumbers;
     }
 
     function seeBalance() view external {
 
     }
 
-    function withdrawMoney() external {
-
+    function withdrawMoney(address payable sendTo) external {
+        uint256 amount = owner2account[msg.sender].accountBalance;
+        if(msg.sender == owner) {
+            amount += ownerBalance;
+        }
+        sendTo.transfer(amount);
     }
 
-    function listNumber(string number, uint256 price) external {
+    function listNumber(string calldata number, uint256 price) external {
         require(number2owner[number]==msg.sender, "Trying to list number that you don't own!");
         number2listing[number] = listingInformation(msg.sender, price);
     }
 
-    function buyNumber(string number) payable external {
-        if(number2owner[number]==0x0) {
+    function buyNumber(string calldata number) payable external {
+        if(number2owner[number]==address(0x0)) {
             require(msg.value == costOfFreeNumber, "Trying to buy a free number, with an inadequate amount of ether");
             receiveNumber(msg.sender, number);
-        } else if(number2listing[number].owner == 0x0) {
-            require(msg.value == number2listing.price);
-            address owner = number2listing[number].owner;
-            transferNumber(msg.sender, owner, number);
+            ownerBalance += costOfFreeNumber;
+        } else if(number2listing[number].owner == address(0x0)) {
+            require(msg.value == number2listing[number].price);
+            address donor = number2listing[number].owner;
+            transferNumber(msg.sender, donor, number, msg.value);
         } else {
             require(false, "Number is neither available nor listed by it's owner");
         }
