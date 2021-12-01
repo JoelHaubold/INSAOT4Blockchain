@@ -63,7 +63,7 @@ contract numberService { //TODO: Currently not collecting any fees
     }
 
     function seeBalance() view external {
-
+        return owner2account[msg.sender].accountBalance;
     }
 
     function withdrawMoney(address payable sendTo) external {
