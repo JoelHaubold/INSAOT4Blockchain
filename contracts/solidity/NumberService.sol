@@ -23,6 +23,7 @@ contract numberService { //TODO: Currently not collecting any fees
     mapping(string=>listingInformation) number2listing;
 
     uint costOfFreeNumber = 1;
+    uint costOfNickname = 1;
 
     constructor () public {
         owner = payable(msg.sender);
@@ -47,14 +48,18 @@ contract numberService { //TODO: Currently not collecting any fees
 
     }
 
-    function checkOwner(string calldata number) view external returns (address) {
-        if(number2owner[number] == address(0x0)){
-            return address(0x0);
+    function checkOwner(string calldata number) view external returns (string memory) {
+        address numberHolder = number2owner[number];
+        if(numberHolder == address(0x0)){
+            return "Unowned";
+        } else if(keccak256(bytes(owner2account[numberHolder].number2nickname[number]))!=keccak256("")){
+            return owner2account[numberHolder].number2nickname[number];
+        } else {
+            return string(abi.encodePacked(owner));
         }
-        return owner; //TODO: Look up nicknames
     }
 
-    function seeTransactions() view external {
+    function seeTransactions() view external { //TODO: Blockchain already does this for us ??
 
     }
 
@@ -62,7 +67,7 @@ contract numberService { //TODO: Currently not collecting any fees
         return owner2account[msg.sender].ownedNumbers;
     }
 
-    function seeBalance() view external {
+    function seeBalance() view external returns (uint256) {
         return owner2account[msg.sender].accountBalance;
     }
 
@@ -92,6 +97,11 @@ contract numberService { //TODO: Currently not collecting any fees
             require(false, "Number is neither available nor listed by it's owner");
         }
 
+    }
+
+    function buyNickname(string calldata nickname, string calldata number) payable external {
+        require(msg.value == costOfNickname, "Inadequate amount of ether for nickname");
+        owner2account[msg.sender].number2nickname[number] = nickname;
     }
 
 }
