@@ -1,5 +1,5 @@
 pragma solidity ^0.8.3;
-contract numberService {
+contract numberService { //TODO: Currently not collecting any fees
     //Contract Owner
     address payable owner;
 
@@ -50,7 +50,7 @@ contract numberService {
         if(number2owner[number] == 0x0){
             return "Unowned";
         }
-        return owner; //TODO: Nicknames
+        return owner; //TODO: Look up nicknames
     }
 
     function seeTransactions() view external {
@@ -67,6 +67,11 @@ contract numberService {
 
     function withdrawMoney() external {
 
+    }
+
+    function listNumber(string number, uint256 price) external {
+        require(number2owner[number]==msg.sender, "Trying to list number that you don't own!");
+        number2listing[number] = listingInformation(msg.sender, price);
     }
 
     function buyNumber(string number) payable external {
