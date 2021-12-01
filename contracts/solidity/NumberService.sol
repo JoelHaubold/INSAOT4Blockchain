@@ -1,7 +1,7 @@
 pragma solidity ^0.8.3;
 contract numberService { //TODO: Currently not collecting any fees
     //Contract Owner
-    address payable owner;
+    address payable contractOwner;
     uint256 ownerBalance;
 
     //User accounts
@@ -21,12 +21,13 @@ contract numberService { //TODO: Currently not collecting any fees
         uint256 price;
     }
     mapping(string=>listingInformation) number2listing;
+    string[] listedNumbers;
 
     uint costOfFreeNumber = 1;
     uint costOfNickname = 1;
 
-    constructor () public {
-        owner = payable(msg.sender);
+    constructor () {
+        contractOwner = payable(msg.sender);
     }
 
     function receiveNumber(address receiver, string memory number) private {
@@ -36,23 +37,27 @@ contract numberService { //TODO: Currently not collecting any fees
 
     function transferNumber(address receiver, address donor, string calldata number, uint256 pay) private {
         number2owner[number] = receiver;
-        string[] memory donorNumbers = owner2account[donor].ownedNumbers;
-        for (uint i = 0; i < donorNumbers.length - 1; i++) {
-            if(keccak256(bytes(donorNumbers[i])) == keccak256(bytes(number))){
+        string[] storage donorNumbers = owner2account[donor].ownedNumbers; // Has to be storage to reflect changes
+        for (uint i = 0; i < donorNumbers.length; i++) {
+            if(compareStrings(donorNumbers[i], number)){
                 donorNumbers[i] = donorNumbers[donorNumbers.length-1];
-                delete donorNumbers[donorNumbers.length - 1];
+                //delete donorNumbers[donorNumbers.length - 1];
+                donorNumbers.pop();
             }
         }
         owner2account[receiver].ownedNumbers.push(number);
         owner2account[donor].accountBalance += pay;
+    }
 
+    function compareStrings(string memory s1, string memory s2) internal pure returns (bool){
+        return keccak256(bytes(s1)) == keccak256(bytes(s2));
     }
 
     function checkOwnerOld(string calldata number) view external returns (string memory) { //TODO: Maybe give suspected owner as parameter and return boolean?
         address numberHolder = number2owner[number];
         if(numberHolder == address(0x0)){
             return "Unowned";
-        } else if(keccak256(bytes(owner2account[numberHolder].number2nickname[number]))!=keccak256("")){
+        } else if(!compareStrings(owner2account[numberHolder].number2nickname[number],"")){
             return owner2account[numberHolder].number2nickname[number];
         } else {
             return string(abi.encodePacked(numberHolder));
@@ -63,7 +68,7 @@ contract numberService { //TODO: Currently not collecting any fees
         address numberHolder = number2owner[number];
         if(numberHolder == address(0x0)){
             return "Unowned";
-        } else if(keccak256(bytes(owner2account[numberHolder].number2nickname[number]))!=keccak256("")){
+        } else if(!compareStrings(owner2account[numberHolder].number2nickname[number],"")){
             return owner2account[numberHolder].number2nickname[number];
         } else {
             return toString(abi.encodePacked(numberHolder));
@@ -95,9 +100,17 @@ contract numberService { //TODO: Currently not collecting any fees
         return owner2account[msg.sender].accountBalance;
     }
 
+    function seeListedNumbers() view external returns (string[] memory) {
+        return listedNumbers;
+    }
+
+    function seePriceOfListedNumber(string calldata number) view external returns (uint256) {
+        return number2listing[number].price;
+    }
+
     function withdrawMoney(address payable sendTo) external {
         uint256 amount = owner2account[msg.sender].accountBalance;
-        if(msg.sender == owner) {
+        if(msg.sender == contractOwner) {
             amount += ownerBalance;
         }
         sendTo.transfer(amount);
@@ -106,6 +119,7 @@ contract numberService { //TODO: Currently not collecting any fees
     function listNumber(string calldata number, uint256 price) external {
         require(number2owner[number]==msg.sender, "Trying to list number that you don't own!");
         number2listing[number] = listingInformation(msg.sender, price);
+        listedNumbers.push(number);
     }
 
     function buyNumber(string calldata number) payable external {
@@ -117,6 +131,13 @@ contract numberService { //TODO: Currently not collecting any fees
             require(msg.value == number2listing[number].price,"Inadequate price for listed number");
             address donor = number2listing[number].owner;
             transferNumber(msg.sender, donor, number, msg.value);
+            number2listing[number] = listingInformation(address(0x0), 0);
+            for (uint i = 0; i < listedNumbers.length; i++) {
+                if(compareStrings(listedNumbers[i], number)){
+                    listedNumbers[i] = listedNumbers[listedNumbers.length-1];
+                    listedNumbers.pop();
+                }
+            }
         } else {
             require(false, "Number is neither available nor listed by it's owner");
         }
