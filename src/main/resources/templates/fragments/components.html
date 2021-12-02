@@ -29,8 +29,9 @@
                     <a class="nav-link" href="/auction">Auction</a>
                 </li>
             </ul>
-            <form class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2" type="search" placeholder="Phone number..." aria-label="Phone number...">
+            <form class="form-inline my-2 my-lg-0" th:action="@{/search/}" method="get">
+                <p class="text-white pr-4 mr-4" th:if="${owner != null}" th:text="${owner}"></p>
+                <input th:name="number" class="form-control mr-sm-2" type="search" placeholder="Phone number..." aria-label="Phone number...">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Check owner</button>
             </form>
         </div>
