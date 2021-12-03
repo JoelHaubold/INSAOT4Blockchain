@@ -13,7 +13,7 @@ contract numberService { //TODO: Currently not collecting any fees
     mapping(address=>account) owner2account;
 
     // Number registry
-    mapping(string=>address) number2owner;
+    mapping(string=>address) number2owner; //Change to offered number system
 
     // Marketplace
     struct listingInformation {
@@ -23,8 +23,9 @@ contract numberService { //TODO: Currently not collecting any fees
     mapping(string=>listingInformation) number2listing;
     string[] listedNumbers;
 
-    uint costOfFreeNumber = 1;
-    uint costOfNickname = 1;
+    uint costOfFreeNumber = 10; //TODO: Maybe set these in constructor?
+    uint costOfNickname = 100;
+    uint costOf60SecondsSubscription = 1;
 
     constructor () {
         contractOwner = payable(msg.sender);
@@ -53,15 +54,9 @@ contract numberService { //TODO: Currently not collecting any fees
         return keccak256(bytes(s1)) == keccak256(bytes(s2));
     }
 
-    function checkOwnerOld(string calldata number) view external returns (string memory) { //TODO: Maybe give suspected owner as parameter and return boolean?
+    function checkOwner(string calldata number, address suspectedOwner) view external returns (bool) {
         address numberHolder = number2owner[number];
-        if(numberHolder == address(0x0)){
-            return "Unowned";
-        } else if(!compareStrings(owner2account[numberHolder].number2nickname[number],"")){
-            return owner2account[numberHolder].number2nickname[number];
-        } else {
-            return string(abi.encodePacked(numberHolder));
-        }
+        return suspectedOwner == numberHolder;
     }
 
     function checkOwner(string calldata number) view external returns (string memory) {
@@ -147,6 +142,39 @@ contract numberService { //TODO: Currently not collecting any fees
     function buyNickname(string calldata nickname, string calldata number) payable external {
         require(msg.value == costOfNickname, "Inadequate amount of ether for nickname");
         owner2account[msg.sender].number2nickname[number] = nickname;
+    }
+
+    function startSubscription(uint256 nmbrSeconds) payable external {
+
+    }
+
+    //TODO: Closed off transaction
+
+}
+
+contract mortal {
+    address payable owner;
+    constructor() { owner = payable(msg.sender); }
+    function kill() public { if (msg.sender == owner) selfdestruct(owner); }
+}
+
+contract numberSubscription is mortal { //TODO: How to return to base?
+    struct reservation {
+        address reserver;
+        uint endTimestamp;
+    }
+    numberService service;
+    mapping(uint=>reservation) startTimestamp2Reservation;
+    uint forseableEndingTimestamp;
+
+    constructor(uint256 nmbrSeconds, string memory originalOwner) mortal() {
+        forseableEndingTimestamp = block.timestamp + nmbrSeconds;
+        startTimestamp2Reservation[block.timestamp] = reservation(msg.sender, forseableEndingTimestamp);
+    }
+
+    function claim() internal {//Transfer ownership if timestamps allow
+
+
     }
 
 }
