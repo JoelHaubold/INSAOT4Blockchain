@@ -208,6 +208,7 @@ contract numberService {
     }
 
     function rentEndAvailability(string calldata number) external {
+        require(number2rentContract[number].originalOwner != address(0x0), "Number is not listed as rentable");
         require(number2rentContract[number].endTimestamp < block.timestamp, "Rent duration hasn't expired yet");
         if(number2rentContract[number].currentActiveRent.renter != address(0x0)) {
             this.rentEndInstance(number);
@@ -241,13 +242,27 @@ contract numberService {
     }
 
     //Bid on an auction:
-    function auctionBid(string calldata number, uint256 amount) external {
-
+    function auctionBid(string calldata number) external payable {
+        require(number2auctionState[number].highestBider != address(0x0), "Number isn't available to bid on");
+        require(number2auctionState[number].highestBid < msg.value, "Bid is not high enough");
+        owner2account[number2auctionState[number].highestBider].accountBalance += number2auctionState[number].highestBid;
+        number2auctionState[number].highestBider = msg.sender;
+        number2auctionState[number].highestBid = msg.value;
     }
 
     //Close auction after end timestamp was passed
-    function auctionEnd(string calldata number, uint256 amount) external {
-
+    function auctionEnd(string calldata number) external {
+        require(number2auctionState[number].highestBider != address(0x0), "Number isn't in auction");
+        require(block.timestamp < number2auctionState[number].endTimestamp, "Auction isn't over yet");
+        transferNumber(number2auctionState[number].highestBider, number2numberInformation[number].owner, number, number2auctionState[number].highestBid);
+        for (uint i = 0; i < numbersBeingAuctioned.length; i++) {
+            if(compareStrings(numbersBeingAuctioned[i], number)){
+                numbersBeingAuctioned[i] = numbersBeingAuctioned[numbersBeingAuctioned.length-1];
+                numbersBeingAuctioned.pop();
+            }
+        }
+        number2numberInformation[number].isBeeingRentedOrAuctionedOrListed = false;
+        number2auctionState[number] = auctionStateInformation(address(0x0),0,0);
     }
 
     //See available auctions
@@ -260,38 +275,3 @@ contract numberService {
         return (number2auctionState[number].highestBid, number2auctionState[number].endTimestamp);
     }
 }
-
-//contract mortal { <--- Doesn't work because of method visibility
-//    address payable contractOwner;
-//    constructor() { contractOwner = payable(msg.sender); }
-//    function kill() internal { if (msg.sender == contractOwner) selfdestruct(contractOwner); }
-//}
-//
-//contract numberRenting is mortal {
-//    address originalOwner;
-//    uint256 rentingAvailabilityEndTimestamp; //End timestamp for this contract
-//    uint256 rentingPeriodEndTimestamp; //End timestamp for the current rent
-//    numberService service;
-//    string rentingNumber;
-//    uint256 rentPrice;
-//
-//    constructor(uint256 _nmbrSeconds, string memory _originalOwner, string _rentingNumber, uint256 _rentPrice) mortal() {
-//        endTimestamp = block.timestamp + _nmbrSeconds;
-//        originalOwner = _originalOwner;
-//        rentingNumber = _rentingNumber;
-//        rentPrice = _rentPrice;
-//    }
-//
-//    function rentOutNumber() {
-//        service.transferNumber(originalOwner, contractOwner, subscribedNumber, 0);
-//    }
-//
-//    function checkEnding() internal returns(uint256) {//Transfer ownership if timestamps allow
-//        if(endTimestamp<block.timestamp) {
-//            service.transferNumber(originalOwner, contractOwner, subscribedNumber, 0);
-//            kill();
-//        }
-//        return endTimestamp;
-//    }
-//
-//}
