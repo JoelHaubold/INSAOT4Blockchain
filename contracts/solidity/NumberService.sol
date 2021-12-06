@@ -22,6 +22,7 @@ contract numberService {
     // Marketplace
     mapping(string=>uint256) number2listingPrice;
     string[] listedNumbers;
+
     struct rentAvailableInformation {
         uint256 price;
         address originalOwner;
@@ -34,6 +35,14 @@ contract numberService {
     }
     mapping(string=>rentAvailableInformation) number2rentContract;
     string[] availableRentNumbers;
+
+    struct auctionStateInformation {
+        address highestBider;
+        uint256 highestBid;
+        uint256 endTimestamp;
+    }
+    mapping(string=>auctionStateInformation) number2auctionState;
+    string[] numbersBeingAuctioned;
 
     //Costs
     uint costOfFreeNumber = 10 wei;
@@ -160,7 +169,9 @@ contract numberService {
         owner2account[msg.sender].number2nickname[number] = nickname;
     }
 
-    function startRent(string calldata number, uint256 nmbrSeconds) payable external {
+    //Functions for renting:
+
+    function rentNumber(string calldata number, uint256 nmbrSeconds) payable external {
         require(number2rentContract[number].price!=0, "This number is not available to rent");
         require(number2rentContract[number].price+costOfReturnDelay==msg.value, "Inadequate price for renting this number");
         require(number2rentContract[number].currentActiveRent.renter == address(0x0), "This number is already beeing rented");
@@ -176,15 +187,16 @@ contract numberService {
         }
     }
 
-    function allowRenting(string calldata number, uint256 price, uint256 nmbrSeconds) external {
+    function rentMakeNumberAvailable(string calldata number, uint256 price, uint256 nmbrSeconds) external {
         require(price>0,"Rent price has to be higher than 0");
+        require(number2numberInformation[number].owner == msg.sender, "Trying to rent out a number that you don't own");
         require(number2numberInformation[number].isBeeingRentedOrAuctionedOrListed == false, "Number is not available for rent");
         number2numberInformation[number].isBeeingRentedOrAuctionedOrListed = true;
         availableRentNumbers.push(number);
         number2rentContract[number] = rentAvailableInformation(price, msg.sender, nmbrSeconds + block.timestamp, rentActiveInformation(address(0x0), 0));
     }
 
-    function reclaimRentedNumber(string calldata number) external {
+    function rentEndInstance(string calldata number) external {
         require(number2rentContract[number].currentActiveRent.endTimestamp < block.timestamp, "Rent session hasn't expired yet");
         uint256 feePayback = 0;
         if(number2rentContract[number].endTimestamp + permittedRentReturnDelay >= block.timestamp) {
@@ -195,10 +207,10 @@ contract numberService {
         availableRentNumbers.push(number);
     }
 
-    function confirmRentEnding(string calldata number) external {
+    function rentEndAvailability(string calldata number) external {
         require(number2rentContract[number].endTimestamp < block.timestamp, "Rent duration hasn't expired yet");
         if(number2rentContract[number].currentActiveRent.renter != address(0x0)) {
-            this.reclaimRentedNumber(number);
+            this.rentEndInstance(number);
         }
         for (uint i = 0; i < availableRentNumbers.length; i++) {
             if(compareStrings(availableRentNumbers[i], number)){
@@ -210,16 +222,43 @@ contract numberService {
         number2rentContract[number] = rentAvailableInformation(0, address(0x0), 0, rentActiveInformation(address(0x0), 0));
     }
 
-    function seeAvailableRentNumbers() view external returns (string[] memory) {
+    function rentSeeAvailableNumbers() view external returns (string[] memory) {
         return availableRentNumbers;
     }
 
-    function seeInformationOfAvailableRentNumber(string calldata number) view external returns (uint256, uint256) {
+    function rentGetInformationOnNumber(string calldata number) view external returns (uint256, uint256) {
         return (number2rentContract[number].price, number2rentContract[number].endTimestamp);
     }
 
-    //TODO: Closed off transaction
+    //Functions for auctions:
+    //Start auction for number
+    function auctionStart(string number, uint256 nmbrSecondsDuration) {
+        require(number2numberInformation[number].owner == msg.sender, "Trying to rent out a number that you don't own");
+        require(number2numberInformation[number].isBeeingRentedOrAuctionedOrListed == false, "Number is not available for rent");
+        number2numberInformation[number].isBeeingRentedOrAuctionedOrListed = true;
+        numbersBeingAuctioned.push(number);
+        number2auctionState[number] = auctionStateInformation(address(0x0), 0, block.timestamp +  nmbrSecondsDuration);
+    }
 
+    //Bid on an auction:
+    function auctionBid(string number, uint256 amount) external {
+
+    }
+
+    //Close auction after end timestamp was passed
+    function auctionEnd(string number, uint256 amount) {
+
+    }
+
+    //See available auctions
+    function auctionSeeAvailable() view external returns (string[] memory) {
+        return numbersBeingAuctioned;
+    }
+
+    //Get auction information
+    function auctionGetInformation(string calldata number) view external returns (uint256, uint256) {
+        return (number2auctionState[number].highestBid, number2auctionState[number].endTimestamp);
+    }
 }
 
 //contract mortal { <--- Doesn't work because of method visibility
