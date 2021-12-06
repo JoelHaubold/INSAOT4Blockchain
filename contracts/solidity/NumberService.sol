@@ -1,4 +1,5 @@
-pragma solidity ^0.8.3;
+pragma experimental ABIEncoderV2;
+pragma solidity ^0.5.2;
 contract numberService {
     //Contract Owner
     address payable numberProvider;
@@ -54,8 +55,8 @@ contract numberService {
     //Timeframes
     uint permittedRentReturnDelay = 60 seconds;
 
-    constructor () {
-        numberProvider = payable(msg.sender);
+    constructor() public {
+        numberProvider = msg.sender;
     }
 
     //Private helper funtion to give a free number to a reveicer
@@ -65,7 +66,7 @@ contract numberService {
     }
 
     //Private helper funtion to transfer a number and mark the pay for the donor
-    function transferNumber(address receiver, address donor, string calldata number, uint256 pay) internal {
+    function transferNumber(address receiver, address donor, string memory number, uint256 pay) internal {
         number2numberInformation[number] = numberInformation(receiver,false);
         string[] storage donorNumbers = owner2account[donor].ownedNumbers; // Has to be storage to reflect changes
         for (uint i = 0; i < donorNumbers.length; i++) {
