@@ -163,6 +163,7 @@ contract numberService {
             ownerBalance += costOfFreeNumber;
         } else if(number2listingPrice[number] != 0) {
             require(msg.value == number2listingPrice[number],"Inadequate price for listed number");
+            require(number2numberInformation[number].owner != msg.sender, "Can't buy own number");
             address donor = number2numberInformation[number].owner;
             transferNumber(msg.sender, donor, number, msg.value);
             number2listingPrice[number] = 0;
@@ -191,6 +192,7 @@ contract numberService {
         require(number2rentContract[number].price!=0, "This number is not available to rent");
         require((number2rentContract[number].price)*nmbrSeconds+costOfReturnDelay==msg.value, "Inadequate price for renting this number");
         require(number2rentContract[number].currentActiveRent.renter == address(0x0), "This number is already beeing rented");
+        require(number2rentContract[number].originalOwner != msg.sender, "Can't rent own number");
         uint256 endTimestamp = nmbrSeconds + block.timestamp;
         require(number2rentContract[number].endTimestamp > endTimestamp, "Trying to rent number for longer than its availability");
         number2rentContract[number].currentActiveRent = rentActiveInformation(msg.sender, endTimestamp);
@@ -257,7 +259,7 @@ contract numberService {
     //Start auction for number
     function auctionStart(string calldata number, uint256 nmbrSecondsDuration) external {
         require(number2numberInformation[number].owner == msg.sender, "Trying to rent out a number that you don't own");
-        require(number2numberInformation[number].isBeingRentedOrAuctionedOrListed == false, "Number is not available for rent");
+        require(number2numberInformation[number].isBeingRentedOrAuctionedOrListed == false, "Number is not available for auction");
         number2numberInformation[number].isBeingRentedOrAuctionedOrListed = true;
         numbersBeingAuctioned.push(number);
         number2auctionState[number] = auctionStateInformation(address(0x0), 0, block.timestamp +  nmbrSecondsDuration);
@@ -265,8 +267,10 @@ contract numberService {
 
     //Bid on an auction:
     function auctionBid(string calldata number) external payable {
-        require(number2auctionState[number].highestBider != address(0x0), "Number isn't available to bid on");
+        require(number2auctionState[number].endTimestamp != 0, "Number isn't available to bid on");
         require(number2auctionState[number].highestBid < msg.value, "Bid is not high enough");
+        require(number2numberInformation[number].owner != msg.sender, "Can't bid on own number");
+        require(block.timestamp < number2auctionState[number].endTimestamp, "Auction is over");
         owner2account[number2auctionState[number].highestBider].accountBalance += number2auctionState[number].highestBid;
         number2auctionState[number].highestBider = msg.sender;
         number2auctionState[number].highestBid = msg.value;
@@ -274,8 +278,8 @@ contract numberService {
 
     //Close auction after end timestamp was passed
     function auctionEnd(string calldata number) external {
-        require(number2auctionState[number].highestBider != address(0x0), "Number isn't in auction");
-        require(block.timestamp < number2auctionState[number].endTimestamp, "Auction isn't over yet");
+        require(number2auctionState[number].endTimestamp != 0, "Number isn't in auction");
+        require(block.timestamp >= number2auctionState[number].endTimestamp, "Auction isn't over yet");
         transferNumber(number2auctionState[number].highestBider, number2numberInformation[number].owner, number, number2auctionState[number].highestBid);
         for (uint i = 0; i < numbersBeingAuctioned.length; i++) {
             if(compareStrings(numbersBeingAuctioned[i], number)){
