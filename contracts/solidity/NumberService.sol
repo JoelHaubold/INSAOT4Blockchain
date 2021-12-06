@@ -36,10 +36,10 @@ contract numberService {
     string[] availableRentNumbers;
 
     //Costs
-    uint costOfFreeNumber = 10 gwei;
-    uint costOfNickname = 100 gwei;
+    uint costOfFreeNumber = 10 wei;
+    uint costOfNickname = 100 wei;
     //uint costOf60SecondsSubscription = 1 gwei;
-    uint costOfReturnDelay = 1 gwei;
+    uint costOfReturnDelay = 1 wei;
 
     //Timeframes
     uint permittedRentReturnDelay = 60 seconds;
@@ -162,8 +162,8 @@ contract numberService {
 
     function startRent(string calldata number, uint256 nmbrSeconds) payable external {
         require(number2rentContract[number].price!=0, "This number is not available to rent");
-        require(number2rentContract[number].price==msg.value+costOfReturnDelay, "Inadequate price for renting this number");
-        require(number2rentContract[number].currentActiveRent.renter != address(0x0), "This number is not available to rent");
+        require(number2rentContract[number].price+costOfReturnDelay==msg.value, "Inadequate price for renting this number");
+        require(number2rentContract[number].currentActiveRent.renter == address(0x0), "This number is already beeing rented");
         uint256 endTimestamp = nmbrSeconds + block.timestamp;
         require(number2rentContract[number].endTimestamp > endTimestamp, "Trying to rent number for longer than its availability");
         number2rentContract[number].currentActiveRent = rentActiveInformation(msg.sender, endTimestamp);
@@ -199,6 +199,12 @@ contract numberService {
         require(number2rentContract[number].endTimestamp < block.timestamp, "Rent duration hasn't expired yet");
         if(number2rentContract[number].currentActiveRent.renter != address(0x0)) {
             this.reclaimRentedNumber(number);
+        }
+        for (uint i = 0; i < availableRentNumbers.length; i++) {
+            if(compareStrings(availableRentNumbers[i], number)){
+                availableRentNumbers[i] = availableRentNumbers[availableRentNumbers.length-1];
+                availableRentNumbers.pop();
+            }
         }
         number2numberInformation[number].isBeeingRentedOrAuctionedOrListed = false;
         number2rentContract[number] = rentAvailableInformation(0, address(0x0), 0, rentActiveInformation(address(0x0), 0));
