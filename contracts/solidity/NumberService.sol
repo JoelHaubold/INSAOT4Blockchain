@@ -232,7 +232,7 @@ contract numberService {
 
     //Functions for auctions:
     //Start auction for number
-    function auctionStart(string number, uint256 nmbrSecondsDuration) {
+    function auctionStart(string calldata number, uint256 nmbrSecondsDuration) external {
         require(number2numberInformation[number].owner == msg.sender, "Trying to rent out a number that you don't own");
         require(number2numberInformation[number].isBeeingRentedOrAuctionedOrListed == false, "Number is not available for rent");
         number2numberInformation[number].isBeeingRentedOrAuctionedOrListed = true;
@@ -241,12 +241,12 @@ contract numberService {
     }
 
     //Bid on an auction:
-    function auctionBid(string number, uint256 amount) external {
+    function auctionBid(string calldata number, uint256 amount) external {
 
     }
 
     //Close auction after end timestamp was passed
-    function auctionEnd(string number, uint256 amount) {
+    function auctionEnd(string calldata number, uint256 amount) external {
 
     }
 
