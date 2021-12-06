@@ -186,11 +186,11 @@ contract numberService {
 
     function reclaimRentedNumber(string calldata number) external {
         require(number2rentContract[number].currentActiveRent.endTimestamp < block.timestamp, "Rent session hasn't expired yet");
-        uint256 fee = 0;
-        if(number2rentContract[number].endTimestamp + permittedRentReturnDelay < block.timestamp) {
-            fee = costOfReturnDelay;
+        uint256 feePayback = 0;
+        if(number2rentContract[number].endTimestamp + permittedRentReturnDelay >= block.timestamp) {
+            feePayback = costOfReturnDelay;
         }
-        transferNumber(number2rentContract[number].originalOwner, number2rentContract[number].currentActiveRent.renter, number, fee);
+        transferNumber(number2rentContract[number].originalOwner, number2rentContract[number].currentActiveRent.renter, number, feePayback);
         number2rentContract[number].currentActiveRent = rentActiveInformation(address(0x0), 0);
         availableRentNumbers.push(number);
     }
