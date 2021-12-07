@@ -28,53 +28,6 @@
             <div class="pt-5">
                 <div class="accordion">
                     <div class="card bg-dark">
-                        <div class="card-header" id="headingOne">
-                            <h2 class="mb-0">
-                                <button class="btn btn-outline-success btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                    My bids
-                                </button>
-                            </h2>
-                        </div>
-                        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
-                            <div class="card-body">
-                                <table class="table table-dark">
-                                    <thead>
-                                    <tr>
-                                        <th scope="col">Phone numbers</th>
-                                        <th scope="col">Highest bid</th>
-                                        <th scope="col">My bid is the highest</th>
-                                        <th scope="col">Deadline</th>
-                                        <th scope="col"></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr th:each="bid: ${myBids}">
-                                        <th scope="row" th:text="${bid.phoneNumber}"></th>
-                                        <td th:text="${bid.highestBid}"></td>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="" id="checkbox"
-                                                       th:attrappend="checked=${bid.highestBidUserAddress == myAddress ? true : null}">
-                                            </div>
-                                        </td>
-<!--                                        TODO: countdown to deadline-->
-                                        <td th:text="${bid.deadline}"></td>
-                                        <td>
-                                            <form th:action="@{/auction/bid/{number}(number=${bid.phoneNumber})}" method="post">
-                                                <input type="number" th:name="bid" id="bid-1"/>
-                                                <label class="form-check-label" for="bid-1">
-                                                    ETH
-                                                </label>
-                                                <button class="btn btn-sm btn-outline-success my-2 my-sm-0" type="submit">Bid</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card bg-dark">
                         <div class="card-header" id="headingTwo">
                             <h2 class="mb-0">
                                 <button class="btn btn-outline-success btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
