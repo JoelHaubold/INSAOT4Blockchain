@@ -321,5 +321,14 @@ contract numberService {
         return number2numberInformation[number].isBeingRentedOrAuctionedOrListed;
     }
 
-
+    function getAvailableForAuctionOrRentOrSaleNumbers() view external returns (string[] memory) {
+        ownedNumbers = owner2account[msg.sender].ownedNumbers;
+        string[] availableForAuctionOrRentOrSaleNumbers;
+        for (uint i = 0; i < ownedNumbers.length; i++) {
+            if(number2numberInformation[ownedNumbers[i]].isBeingRentedOrAuctionedOrListed) {
+                availableForAuctionOrRentOrSaleNumbers.push(ownedNumbers[i]);
+            }
+        }
+        return availableForAuctionOrRentOrSaleNumbers;
+    }
 }
