@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -14,8 +15,6 @@ import java.util.regex.Pattern;
 
 @Controller
 public class MarketController {
-    // TODO: this is to mimic the login process, change accordingly
-
     private final Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
 
     @GetMapping("/market")
@@ -58,7 +57,7 @@ public class MarketController {
         List result = contract.seeOwnedNumbers().send();
 
         if ( result.isEmpty() ) {
-            String randomID = AccountController.getRandomIdentifier("FBI");
+            String randomID = AccountController.getRandomIdentifier("000");
             contract.buyNumber(randomID, new BigInteger("10")).send();
         }
 
@@ -79,12 +78,14 @@ public class MarketController {
         List result = contract.seeOwnedNumbers().send();
 
         if ( result.isEmpty() ) {
-            String randomID = AccountController.getRandomIdentifier("FBI");
-            contract.buyNumber(randomID, new BigInteger("10")).send();
+            String randomID = AccountController.getRandomIdentifier("000");
+            TransactionReceipt receipt = contract.buyNumber(randomID, new BigInteger("10")).send();
+            System.out.println(receipt);
         }
 
 
-        contract.buyNumber(number, new BigInteger("10")).send();
+        TransactionReceipt receipt = contract.buyNumber(number, new BigInteger("10")).send();
+        System.out.println(receipt);
 
         return "redirect:/account/numbers";
     }

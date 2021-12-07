@@ -42,6 +42,7 @@ public class AccountController {
 		NumberService contract = singleton.getContract();
 		List result = contract.seeOwnedNumbers().send();
 		ArrayList<String> phoneNumbers = new ArrayList<>();
+		System.out.println(result);
 		if (result.size() >= 1) {
 			phoneNumbers.addAll((List<String>) result);
 			phoneNumbers.remove(0);
@@ -83,7 +84,7 @@ public class AccountController {
 		NumberService contract = singleton.getContract();
 
 		if (contract.rentSeeAvailableNumbers().send().isEmpty()) {
-			String randomID = getRandomIdentifier("0000");
+			String randomID = getRandomIdentifier("000");
 			contract.buyNumber(randomID, new BigInteger("10")).send();
 			contract.rentMakeNumberAvailable(
 					randomID,
