@@ -16,6 +16,11 @@
             </div>
             <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
                 <div class="card-body">
+                    <form class="form-inline my-2 my-lg-0" th:action="@{/market/phone-number/buy/my-choice}" method="post">
+                        <input th:name="number" class="form-control mr-sm-2" type="text" placeholder="Phone number..." aria-label="Phone number...">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Buy free number</button>
+                    </form>
+                    <br>
                     <table class="table table-dark">
                         <thead>
                         <tr>

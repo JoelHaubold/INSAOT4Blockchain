@@ -3,14 +3,24 @@ package com.example.springboot;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.web3j.abi.FunctionReturnDecoder;
+import org.web3j.abi.datatypes.Type;
+import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
+import org.web3j.protocol.core.methods.response.Log;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.rlp.RlpDecoder;
+
+import javax.servlet.ServletOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 public class AccountController {
+	// TODO: this is to mimic the login process, change accordingly
 
 	@GetMapping("/account")
 	public String showAccountActions(Model model) {
-		//TODO: replace with real data
-
 		model.addAttribute("tab", "home");
 
 		return "account";
@@ -31,10 +41,15 @@ public class AccountController {
 	}
 
 	@GetMapping("/account/numbers")
-	public String showPhoneNumbers(Model model) {
-		//TODO: replace with real data
-		String[] phoneNumbers = {"11111", "2222222", "3333333"};
-
+	public String showPhoneNumbers(Model model) throws Exception {
+		Singleton singleton = Singleton.getInstance();
+		NumberService contract = singleton.getContract();
+		List result = contract.seeOwnedNumbers().send();
+		ArrayList<String> phoneNumbers = new ArrayList<>();
+		if (result.size() >= 1) {
+			phoneNumbers.addAll((List<String>) result);
+			phoneNumbers.remove(0);
+		}
 		model.addAttribute("phoneNumbers", phoneNumbers);
 		model.addAttribute("tab", "numbers");
 
