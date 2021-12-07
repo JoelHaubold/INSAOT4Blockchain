@@ -5,6 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -78,7 +79,7 @@ public class AccountController {
 	}
 
 	@GetMapping("/account/rent-my-number/{number}")
-	public String rentMyNumber(Model model, @PathVariable(value="number") String number, @RequestParam int price, @RequestParam int days) throws Exception {
+	public RedirectView rentMyNumber(Model model, @PathVariable(value="number") String number, @RequestParam int price, @RequestParam int days) throws Exception {
 		//TODO: actually rent the NR
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
@@ -99,11 +100,11 @@ public class AccountController {
 				new BigInteger(String.valueOf(price))
 		).send();
 
-		return "account";
+		return new RedirectView("account/numbers");
 	}
 
 	@GetMapping("/account/sell-my-number/{number}")
-	public String sellMyNumber(Model model, @PathVariable(value="number") String number, @RequestParam int price) throws Exception {
+	public RedirectView sellMyNumber(Model model, @PathVariable(value="number") String number, @RequestParam int price) throws Exception {
 		//TODO: actually sell the NR
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
@@ -117,7 +118,7 @@ public class AccountController {
 
 		contract.listNumber(number, new BigInteger(String.valueOf(price))).send();
 
-		return "account";
+		return new RedirectView("account/numbers");
 	}
 
 	static String getRandomIdentifier(String beginning) throws Exception {

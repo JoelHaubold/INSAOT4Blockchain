@@ -31,8 +31,8 @@
                         </thead>
                         <tbody>
                         <tr th:each="number: ${phoneNumbersForSale}">
-                            <th scope="row" th:text="${number}"></th>
-                            <td>10</td>
+                            <th scope="row" th:text="${number.phoneNumber}"></th>
+                            <td th:text="${number.price}"></td>
                             <td>
                                 <form th:action="@{/market/phone-number/buy/{number}(number=${number})}" method="post">
                                     <button class="btn btn-sm btn-outline-success my-2 my-sm-0" type="submit">Buy</button>
@@ -58,16 +58,16 @@
                         <thead>
                         <tr>
                             <th scope="col">Phone numbers for rent</th>
-                            <th scope="col">Price</th>
+                            <th scope="col">Price pro day</th>
                             <th scope="col">Period</th>
                             <th scope="col"></th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="number: ${phoneNumbersForRent}">
-                            <th scope="row" th:text="${number}"></th>
-                            <td>10</td>
-                            <td>x Days</td>
+                            <th scope="row" th:text="${number.phoneNumber}"></th>
+                            <td th:text="${number.price}"></td>
+                            <td th:text="${number.endTimestamp}"></td>
                             <td>
                                 <form th:action="@{/market/phone-number/rent/{number}(number=${number})}" method="post">
                                     <button class="btn btn-sm btn-outline-success my-2 my-sm-0" type="submit">Rent</button>

@@ -77,15 +77,13 @@ public class AuctionController {
 	private void addDataToModel(Model model) throws Exception {
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
+//		TODO: replace getNumbersAvailableForSaleOrRentOrAuction
 		List result = contract.seeOwnedNumbers().send();
 		ArrayList<String> myPhoneNumbers = new ArrayList<>();
 		if (result.size() >= 1) {
 			myPhoneNumbers.addAll((List<String>) result);
 			myPhoneNumbers.remove(0);
 		}
-//		for(Object number : result) {
-//			if
-//		}
 
 		List<AuctionItem> auctionItems = new ArrayList<>();
 		List available = contract.auctionSeeAvailable().send();

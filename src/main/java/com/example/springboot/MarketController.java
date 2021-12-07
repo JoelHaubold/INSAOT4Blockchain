@@ -7,9 +7,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.tuples.generated.Tuple2;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -26,16 +28,24 @@ public class MarketController {
         List phoneNumbersForSale = contract.seeListedNumbers().send();
         List phoneNumbersForRent = contract.rentSeeAvailableNumbers().send();
 
-        ArrayList<String> forSale = new ArrayList<>();
-        ArrayList<String> forRent = new ArrayList<>();
+        ArrayList<NumberForSaleOrRent> forSale = new ArrayList<>();
+        ArrayList<NumberForSaleOrRent> forRent = new ArrayList<>();
 
         if (phoneNumbersForSale.size() >= 1) {
-            forSale.addAll(phoneNumbersForSale);
-            forSale.remove(0);
+            phoneNumbersForSale.remove(0);
         }
         if (phoneNumbersForRent.size() >= 1) {
-            forRent.addAll(phoneNumbersForRent);
-            forRent.remove(0);
+            phoneNumbersForRent.remove(0);
+        }
+
+        for (Object number : phoneNumbersForSale) {
+            BigInteger price = contract.seePriceOfListedNumber(number.toString()).send();
+            forSale.add(new NumberForSaleOrRent(number.toString(), price, BigInteger.valueOf(0)));
+        }
+
+        for (Object number : phoneNumbersForRent) {
+            Tuple2<BigInteger, BigInteger> info = contract.rentGetInformationOnNumber(number.toString()).send();
+            forRent.add(new NumberForSaleOrRent(number.toString(), info.getValue1(), info.getValue2()));
         }
 
         model.addAttribute("phoneNumbersForSale", forSale);
@@ -102,5 +112,17 @@ public class MarketController {
         // TODO
 
         return "market";
+    }
+
+    private class NumberForSaleOrRent {
+        public String phoneNumber;
+        public BigInteger price;
+        public BigInteger endTimestamp;
+
+        public NumberForSaleOrRent(String phoneNumber, BigInteger price, BigInteger endTimestamp) {
+            this.phoneNumber = phoneNumber;
+            this.price = price;
+            this.endTimestamp = endTimestamp; // some random deadline
+        }
     }
 }
