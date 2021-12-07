@@ -306,4 +306,11 @@ contract numberService {
     function auctionGetInformation(string calldata number) view external returns (uint256, uint256) {
         return (number2auctionState[number].highestBid, number2auctionState[number].endTimestamp);
     }
+
+    //Get auction information
+    function isNumberAvailableForAuctionOrRentOrSale(string calldata number) view external returns (bool) {
+        return number2numberInformation[number].isBeingRentedOrAuctionedOrListed;
+    }
+
+
 }

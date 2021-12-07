@@ -11,6 +11,7 @@ import org.web3j.tuples.generated.Tuple2;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,11 +59,15 @@ public class AuctionController {
 
 	@PostMapping("/auction/off")
 	public String offNumber(Model model,
-							 @RequestParam int number,
+							 @RequestParam String number,
 							 @RequestParam int price,
 							 @RequestParam("deadline") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime deadline
 	) throws Exception {
 		//TODO: replace with logic
+		Singleton singleton = Singleton.getInstance();
+		NumberService contract = singleton.getContract();
+		long duration = ChronoUnit.SECONDS.between(LocalDateTime.now(), deadline);
+		contract.auctionStart(number, BigInteger.valueOf(duration)).send();
 		addDataToModel(model);
 		model.addAttribute("tab", "sell");
 
@@ -78,6 +83,9 @@ public class AuctionController {
 			myPhoneNumbers.addAll((List<String>) result);
 			myPhoneNumbers.remove(0);
 		}
+//		for(Object number : result) {
+//			if
+//		}
 
 		List<AuctionItem> auctionItems = new ArrayList<>();
 		List available = contract.auctionSeeAvailable().send();
