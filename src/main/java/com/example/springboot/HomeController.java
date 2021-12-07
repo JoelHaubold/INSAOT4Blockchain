@@ -20,9 +20,11 @@ public class HomeController {
 	}
 
 	@GetMapping("/search")
-	public String homePage(Model model, HttpServletRequest request, RedirectAttributes redir, @RequestParam int number) {
+	public String homePage(Model model, HttpServletRequest request, RedirectAttributes redir, @RequestParam int number) throws Exception {
 //		TODO: replace with real data
-		String owner = "some_owner";
+		Singleton singleton = Singleton.getInstance();
+		NumberService contract = singleton.getContract();
+		String owner = contract.checkOwner(String.valueOf(number)).send();
 
 		model.addAttribute("appName", appName);
 		redir.addFlashAttribute("owner",owner);
