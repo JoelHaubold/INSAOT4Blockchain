@@ -9,19 +9,20 @@ import org.web3j.tx.gas.DefaultGasProvider;
 public final class Singleton {
     private static Singleton instance;
 
-    private static final String CONTRACT_ADDRESS = "0x4807bf9cbf073591ea72e34bcfa6be7907b09440"; // TODO: change accordingly
+    private static final String CONTRACT_ADDRESS = "0xbe78c7713dfe64ba3ea01eccd7b3a48d04b81b78"; // TODO: change accordingly
 
     private static final String SOURCE = System.getenv("SOURCE");
     private static final String SOURCE_PASSWORD = System.getenv("SOURCE_PASSWORD");
 
-    private final NumberService contract;
+    private NumberService contract;
     private final Web3j web = Web3j.build(new HttpService());
-    private final Credentials credentials = WalletUtils.loadCredentials(
-            SOURCE_PASSWORD,
-            SOURCE
-    );
 
     private Singleton() throws Exception {
+        Credentials credentials = WalletUtils.loadCredentials(
+                SOURCE_PASSWORD,
+                SOURCE
+        );
+
         this.contract = NumberService.load(
                 CONTRACT_ADDRESS,
                 this.getWeb(),
@@ -37,8 +38,6 @@ public final class Singleton {
     public Web3j getWeb() {
         return this.web;
     }
-
-public Credentials getCredentials() { return this.credentials; }
 
     public static Singleton getInstance() throws Exception {
         if ( instance == null ) {
