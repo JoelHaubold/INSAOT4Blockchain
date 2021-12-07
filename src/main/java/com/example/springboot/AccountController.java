@@ -3,6 +3,8 @@ package com.example.springboot;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
@@ -75,6 +77,39 @@ public class AccountController {
 		model.addAttribute("balance", balance);
 		model.addAttribute("tab", "balance");
 
+		return "account";
+	}
+
+	@GetMapping("/account/rent-my-number/{number}")
+	public String rentMyNumber(Model model, @RequestParam int price, @RequestParam int days) throws Exception {
+		//TODO: actually rent the NR
+		Singleton singleton = Singleton.getInstance();
+		NumberService contract = singleton.getContract();
+		List result = contract.seeOwnedNumbers().send();
+		ArrayList<String> phoneNumbers = new ArrayList<>();
+		if (result.size() >= 1) {
+			phoneNumbers.addAll((List<String>) result);
+			phoneNumbers.remove(0);
+		}
+		model.addAttribute("tab", "numbers");
+		model.addAttribute("phoneNumbers", phoneNumbers);
+		return "account";
+	}
+
+	@GetMapping("/account/sell-my-number/{number}")
+	public String sellMyNumber(Model model, @RequestParam int price) throws Exception {
+		//TODO: actually sell the NR
+
+		Singleton singleton = Singleton.getInstance();
+		NumberService contract = singleton.getContract();
+		List result = contract.seeOwnedNumbers().send();
+		ArrayList<String> phoneNumbers = new ArrayList<>();
+		if (result.size() >= 1) {
+			phoneNumbers.addAll((List<String>) result);
+			phoneNumbers.remove(0);
+		}
+		model.addAttribute("tab", "numbers");
+		model.addAttribute("phoneNumbers", phoneNumbers);
 		return "account";
 	}
 }
