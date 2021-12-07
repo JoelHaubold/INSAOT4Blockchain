@@ -47,10 +47,10 @@ contract numberService {
     string[] numbersBeingAuctioned;
 
     //Costs
-    uint costOfFreeNumber = 10 wei;
-    uint costOfNickname = 100 wei;
+    uint costOfFreeNumber = 1 ether;
+    uint costOfNickname = 10 ether;
     //uint costOf60SecondsSubscription = 1 gwei;
-    uint costOfReturnDelay = 1 wei;
+    uint costOfReturnDelay = 1 ether;
 
     //Timeframes
     uint permittedRentReturnDelay = 60 seconds;
@@ -141,8 +141,10 @@ contract numberService {
         uint256 amount = owner2account[msg.sender].accountBalance;
         if(msg.sender == numberProvider) {
             amount += ownerBalance;
+            ownerBalance = 0;
         }
         sendTo.transfer(amount);
+        owner2account[msg.sender].accountBalance = 0;
     }
 
     //List a number of the caller for the given price for a potential buyer
@@ -151,7 +153,7 @@ contract numberService {
         require(number2numberInformation[number].owner==msg.sender, "Trying to list number that you don't own!");
         require(number2numberInformation[number].isBeingRentedOrAuctionedOrListed == false, "Number is not available for listing");
         number2numberInformation[number].isBeingRentedOrAuctionedOrListed = true;
-        number2listingPrice[number] = price;
+        number2listingPrice[number] = price*(1 ether);
         listedNumbers.push(number);
     }
 
@@ -184,13 +186,14 @@ contract numberService {
     function buyNickname(string calldata nickname, string calldata number) payable external {
         require(msg.value == costOfNickname, "Inadequate amount of ether for nickname");
         owner2account[msg.sender].number2nickname[number] = nickname;
+        ownerBalance += costOfNickname;
     }
 
     //Functions for renting:
     //Rent a number that was marked by its owner as rentable for the given number of seconds. Price depends on the rent duration as specifie by the owners
     function rentNumber(string calldata number, uint256 nmbrSeconds) payable external {
         require(number2rentContract[number].price!=0, "This number is not available to rent");
-        require((number2rentContract[number].price)*nmbrSeconds+costOfReturnDelay==msg.value, "Inadequate price for renting this number");
+        require((number2rentContract[number].price)*nmbrSeconds/10+costOfReturnDelay==msg.value, "Inadequate price for renting this number");
         require(number2rentContract[number].currentActiveRent.renter == address(0x0), "This number is already beeing rented");
         require(number2rentContract[number].originalOwner != msg.sender, "Can't rent own number");
         uint256 endTimestamp = nmbrSeconds + block.timestamp;
@@ -205,23 +208,26 @@ contract numberService {
         }
     }
 
-    //Makes a number owned by the caller available to rent for the given number of seconds. Renters will be charged the price per second.
+    //Makes a number owned by the caller available to rent for the given number of seconds. Renters will be charged the price per ten second.
     //You have to prepay a fee that is kept if you don't return the rented number on time with rentEndInstance.
-    function rentMakeNumberAvailable(string calldata number, uint256 price, uint256 nmbrSeconds) external {
-        require(price>0,"Rent price has to be higher than 0");
+    function rentMakeNumberAvailable(string calldata number, uint256 pricePerTenSeconds, uint256 nmbrSeconds) external {
+        require(pricePerTenSeconds>0,"Rent price has to be higher than 0");
         require(number2numberInformation[number].owner == msg.sender, "Trying to rent out a number that you don't own");
         require(number2numberInformation[number].isBeingRentedOrAuctionedOrListed == false, "Number is not available for rent");
         number2numberInformation[number].isBeingRentedOrAuctionedOrListed = true;
         availableRentNumbers.push(number);
-        number2rentContract[number] = rentAvailableInformation(price, msg.sender, nmbrSeconds + block.timestamp, rentActiveInformation(address(0x0), 0));
+        number2rentContract[number] = rentAvailableInformation(pricePerTenSeconds*(1 ether), msg.sender, nmbrSeconds + block.timestamp, rentActiveInformation(address(0x0), 0));
     }
 
     //End the renting of a number if the rent duration elapsed. If returned to late the prepayed fee will be kept
     function rentEndInstance(string calldata number) external {
+        require(number2rentContract[number].currentActiveRent.endTimestamp != 0, "Number isn't beeing rented");
         require(number2rentContract[number].currentActiveRent.endTimestamp < block.timestamp, "Rent session hasn't expired yet");
         uint256 feePayback = 0;
         if(number2rentContract[number].endTimestamp + permittedRentReturnDelay >= block.timestamp) {
             feePayback = costOfReturnDelay;
+        } else {
+            ownerBalance += costOfReturnDelay;
         }
         transferNumber(number2rentContract[number].originalOwner, number2rentContract[number].currentActiveRent.renter, number, feePayback);
         number2rentContract[number].currentActiveRent = rentActiveInformation(address(0x0), 0);
