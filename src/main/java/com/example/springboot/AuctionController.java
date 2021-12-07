@@ -17,7 +17,7 @@ import java.util.List;
 public class AuctionController {
 
 	@GetMapping("/auction")
-	public String showAuctionInfo(Model model) {
+	public String showAuctionInfo(Model model) throws Exception {
 		//TODO: replace with real data
 		addDataToModel(model);
 		model.addAttribute("tab", "home");
@@ -26,7 +26,7 @@ public class AuctionController {
 	}
 
 	@GetMapping("/auction/buy")
-	public String showAuctionItems(Model model) {
+	public String showAuctionItems(Model model) throws Exception {
 		//TODO: replace with real data
 		addDataToModel(model);
 		model.addAttribute("tab", "buy");
@@ -35,7 +35,7 @@ public class AuctionController {
 	}
 
 	@GetMapping("/auction/sell")
-	public String showAuctionOff(Model model) {
+	public String showAuctionOff(Model model) throws Exception {
 		//TODO: replace with real data
 		addDataToModel(model);
 		model.addAttribute("tab", "sell");
@@ -46,7 +46,7 @@ public class AuctionController {
 	@PostMapping("/auction/bid/{number}")
 	public String bid(Model model,
 							 @PathVariable int number,
-							 @RequestParam int bid) {
+							 @RequestParam int bid) throws Exception {
 		//TODO: replace with logic
 		addDataToModel(model);
 		model.addAttribute("tab", "buy");
@@ -59,7 +59,7 @@ public class AuctionController {
 							 @RequestParam int number,
 							 @RequestParam int price,
 							 @RequestParam("deadline") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime deadline
-	) {
+	) throws Exception {
 		//TODO: replace with logic
 		addDataToModel(model);
 		model.addAttribute("tab", "sell");
@@ -67,9 +67,15 @@ public class AuctionController {
 		return "auction";
 	}
 
-	private void addDataToModel(Model model) {
-//		TODO: replace with real data
-		String[] myPhoneNumbers = {"11111", "2222222", "3333333"};
+	private void addDataToModel(Model model) throws Exception {
+		Singleton singleton = Singleton.getInstance();
+		NumberService contract = singleton.getContract();
+		List result = contract.seeOwnedNumbers().send();
+		ArrayList<String> myPhoneNumbers = new ArrayList<>();
+		if (result.size() >= 1) {
+			myPhoneNumbers.addAll((List<String>) result);
+			myPhoneNumbers.remove(0);
+		}
 		AuctionItem[] myBids = {
 				new AuctionItem(1112223333, 10, "address1"),
 				new AuctionItem(1112223444, 10, "address2"),

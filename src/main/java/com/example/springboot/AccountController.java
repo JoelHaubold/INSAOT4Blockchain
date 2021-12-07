@@ -81,7 +81,7 @@ public class AccountController {
 	}
 
 	@GetMapping("/account/rent-my-number/{number}")
-	public String rentMyNumber(Model model, @RequestParam int price, @RequestParam int days) throws Exception {
+	public String rentMyNumber(Model model, @PathVariable(value="number") String number, @RequestParam int price, @RequestParam int days) throws Exception {
 		//TODO: actually rent the NR
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
@@ -97,7 +97,7 @@ public class AccountController {
 	}
 
 	@GetMapping("/account/sell-my-number/{number}")
-	public String sellMyNumber(Model model, @RequestParam int price) throws Exception {
+	public String sellMyNumber(Model model, @PathVariable(value="number") String number, @RequestParam int price) throws Exception {
 		//TODO: actually sell the NR
 
 		Singleton singleton = Singleton.getInstance();
