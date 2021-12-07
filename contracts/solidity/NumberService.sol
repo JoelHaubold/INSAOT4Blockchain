@@ -59,8 +59,17 @@ contract numberService {
         numberProvider = msg.sender;
     }
 
+
+    function getNicknameForNumber(string calldata number) view external returns (string memory){
+        string memory nickname = owner2account[msg.sender].number2nickname[number];
+        if(compareStrings(nickname, "")){
+            return "NO_NICKNAME";
+        }
+        return nickname;
+    }
+
     //Private helper funtion to give a free number to a reveicer
-    function receiveNumber(address receiver, string memory number) private {
+    function receiveNumber(address receiver, string memory number) internal {
         number2numberInformation[number] = numberInformation(receiver,false);
         owner2account[receiver].ownedNumbers.push(number);
     }
