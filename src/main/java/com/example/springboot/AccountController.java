@@ -79,7 +79,7 @@ public class AccountController {
 	}
 
 	@GetMapping("/account/rent-my-number/{number}")
-	public RedirectView rentMyNumber(Model model, @PathVariable(value="number") String number, @RequestParam int price, @RequestParam int days) throws Exception {
+	public String rentMyNumber(Model model, @PathVariable(value="number") String number, @RequestParam int price, @RequestParam int days) throws Exception {
 		//TODO: actually rent the NR
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
@@ -100,11 +100,21 @@ public class AccountController {
 				new BigInteger(String.valueOf(price))
 		).send();
 
-		return new RedirectView("account/numbers");
+		List result = contract.seeOwnedNumbers().send();
+		ArrayList<String> phoneNumbers = new ArrayList<>();
+		System.out.println(result);
+		if (result.size() >= 1) {
+			phoneNumbers.addAll((List<String>) result);
+			phoneNumbers.remove(0);
+		}
+		model.addAttribute("phoneNumbers", phoneNumbers.stream().filter(n -> !n.startsWith("000_")).collect(Collectors.toList()));
+		model.addAttribute("tab", "numbers");
+
+		return "account";
 	}
 
 	@GetMapping("/account/sell-my-number/{number}")
-	public RedirectView sellMyNumber(Model model, @PathVariable(value="number") String number, @RequestParam int price) throws Exception {
+	public String sellMyNumber(Model model, @PathVariable(value="number") String number, @RequestParam int price) throws Exception {
 		//TODO: actually sell the NR
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
@@ -117,8 +127,16 @@ public class AccountController {
 		}
 
 		contract.listNumber(number, new BigInteger(String.valueOf(price))).send();
-
-		return new RedirectView("account/numbers");
+		List result = contract.seeOwnedNumbers().send();
+		ArrayList<String> phoneNumbers = new ArrayList<>();
+		System.out.println(result);
+		if (result.size() >= 1) {
+			phoneNumbers.addAll((List<String>) result);
+			phoneNumbers.remove(0);
+		}
+		model.addAttribute("phoneNumbers", phoneNumbers.stream().filter(n -> !n.startsWith("000_")).collect(Collectors.toList()));
+		model.addAttribute("tab", "numbers");
+		return "account";
 	}
 
 	static String getRandomIdentifier(String beginning) throws Exception {
