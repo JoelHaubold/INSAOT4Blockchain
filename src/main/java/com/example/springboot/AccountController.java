@@ -5,21 +5,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.web3j.abi.FunctionReturnDecoder;
-import org.web3j.abi.datatypes.Type;
-import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
-import org.web3j.protocol.core.methods.response.Log;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.web3j.rlp.RlpDecoder;
 
-import javax.servlet.ServletOutputStream;
-import java.nio.charset.StandardCharsets;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 @Controller
 public class AccountController {
-	// TODO: this is to mimic the login process, change accordingly
 
 	@GetMapping("/account")
 	public String showAccountActions(Model model) {
@@ -29,10 +23,10 @@ public class AccountController {
 	}
 
 	@GetMapping("/account/details")
-	public String showAccountDetails(Model model) {
-		//TODO: replace with real data
-		String accountAddress = "000111222";
-		String nickname = "FatCat";
+	public String showAccountDetails(Model model) throws Exception {
+		Singleton singleton = Singleton.getInstance();
+		String accountAddress = singleton.getCredentials().getAddress();
+		String nickname = "Fat Cat";
 
 
 		model.addAttribute("accountAddress", accountAddress);
@@ -52,7 +46,7 @@ public class AccountController {
 			phoneNumbers.addAll((List<String>) result);
 			phoneNumbers.remove(0);
 		}
-		model.addAttribute("phoneNumbers", phoneNumbers);
+		model.addAttribute("phoneNumbers", phoneNumbers.stream().filter(n -> !n.startsWith("000_")).collect(Collectors.toList()));
 		model.addAttribute("tab", "numbers");
 
 		return "account";
@@ -60,7 +54,7 @@ public class AccountController {
 
 	@GetMapping("/account/transactions")
 	public String showTransactions(Model model) {
-		//TODO: replace with real data
+		// Undoable
 		String[] transactions = {"t1", "t2", "t3"};
 
 		model.addAttribute("transactions", transactions);
@@ -70,9 +64,11 @@ public class AccountController {
 	}
 
 	@GetMapping("/account/balance")
-	public String showBalance(Model model) {
+	public String showBalance(Model model) throws Exception {
 		//TODO: replace with real data
-		int balance = 666;
+		Singleton singleton = Singleton.getInstance();
+		NumberService contract = singleton.getContract();
+		BigInteger balance = contract.seeBalance().send();
 
 		model.addAttribute("balance", balance);
 		model.addAttribute("tab", "balance");
@@ -85,31 +81,57 @@ public class AccountController {
 		//TODO: actually rent the NR
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
-		List result = contract.seeOwnedNumbers().send();
-		ArrayList<String> phoneNumbers = new ArrayList<>();
-		if (result.size() >= 1) {
-			phoneNumbers.addAll((List<String>) result);
-			phoneNumbers.remove(0);
+
+		if (contract.rentSeeAvailableNumbers().send().isEmpty()) {
+			String randomID = getRandomIdentifier("0000");
+			contract.buyNumber(randomID, new BigInteger("10")).send();
+			contract.rentMakeNumberAvailable(
+					randomID,
+					new BigInteger("1000000000000000000"),
+					new BigInteger("10")
+			).send();
 		}
-		model.addAttribute("tab", "numbers");
-		model.addAttribute("phoneNumbers", phoneNumbers);
+
+		contract.rentMakeNumberAvailable(
+				number,
+				new BigInteger(String.valueOf(60*60*24*days)),
+				new BigInteger(String.valueOf(price))
+		).send();
+
 		return "account";
 	}
 
 	@GetMapping("/account/sell-my-number/{number}")
 	public String sellMyNumber(Model model, @PathVariable(value="number") String number, @RequestParam int price) throws Exception {
 		//TODO: actually sell the NR
-
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
-		List result = contract.seeOwnedNumbers().send();
-		ArrayList<String> phoneNumbers = new ArrayList<>();
-		if (result.size() >= 1) {
-			phoneNumbers.addAll((List<String>) result);
-			phoneNumbers.remove(0);
+
+		if (contract.seeListedNumbers().send().isEmpty()) {
+			System.out.println("Its empty");
+			String randomID = getRandomIdentifier("000");
+			contract.buyNumber(randomID, new BigInteger("10")).send();
+			contract.listNumber(randomID, new BigInteger("1")).send();
 		}
-		model.addAttribute("tab", "numbers");
-		model.addAttribute("phoneNumbers", phoneNumbers);
+
+		contract.listNumber(number, new BigInteger(String.valueOf(price))).send();
+
 		return "account";
+	}
+
+	static String getRandomIdentifier(String beginning) throws Exception {
+		int leftLimit = 48; // numeral '0'
+		int rightLimit = 122; // letter 'z'
+		int targetStringLength = 12;
+		Random random = new Random();
+
+		String randomID = random.ints(leftLimit, rightLimit + 1)
+				.filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+				.limit(targetStringLength)
+				.collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+				.toString();
+
+		System.out.println(randomID);
+		return beginning + "_" + randomID;
 	}
 }

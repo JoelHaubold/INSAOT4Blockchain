@@ -99,9 +99,6 @@ public class AuctionController {
 		model.addAttribute("myPhoneNumbers", myPhoneNumbers);
 		model.addAttribute("auctionItems", auctionItems);
 		model.addAttribute("myAddress", "myAddress");
-
-
-
 	}
 
 	// TODO: remove when have real data
