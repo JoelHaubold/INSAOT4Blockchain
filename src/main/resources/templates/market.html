@@ -58,7 +58,7 @@
                         <thead>
                         <tr>
                             <th scope="col">Phone numbers for rent</th>
-                            <th scope="col">Price pro day</th>
+                            <th scope="col">Price per hour</th>
                             <th scope="col">Period</th>
                             <th scope="col"></th>
                         </tr>
@@ -66,7 +66,7 @@
                         <tbody>
                         <tr th:each="number: ${phoneNumbersForRent}">
                             <th scope="row" th:text="${number.phoneNumber}"></th>
-                            <td th:text="${number.price}"></td>
+                            <td th:text="${number.price} + ' WEI'"></td>
                             <td th:text="${number.endTimestamp}"></td>
                             <td>
                                 <form th:action="@{/market/phone-number/rent/{number}(number=${number.phoneNumber})}" method="post">

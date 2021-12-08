@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.web3j.tuples.generated.Tuple2;
+import org.web3j.utils.Convert;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -53,7 +54,10 @@ public class AuctionController {
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
 
-		contract.auctionBid(String.valueOf(number), new BigInteger(String.valueOf(bid))).send();
+		contract.auctionBid(
+				String.valueOf(number),
+				new BigInteger(String.valueOf(bid))
+		).send();
 
 		addDataToModel(model);
 		model.addAttribute("tab", "buy");
@@ -67,14 +71,17 @@ public class AuctionController {
 							 @RequestParam int price,
 							 @RequestParam("deadline") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime deadline
 	) throws Exception {
-		//TODO: replace with logic
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
+
 		long duration = ChronoUnit.SECONDS.between(LocalDateTime.now(), deadline);
 
 		if (contract.auctionSeeAvailable().send().isEmpty()) {
 			String randomID = AccountController.getRandomIdentifier("000");
-			contract.buyNumber(randomID, new BigInteger("10")).send();
+			contract.buyNumber(
+					randomID,
+					Convert.toWei("1", Convert.Unit.ETHER).toBigInteger()
+			).send();
 			contract.auctionStart(randomID, new BigInteger("100000")).send();
 		}
 

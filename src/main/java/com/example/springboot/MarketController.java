@@ -1,5 +1,6 @@
 package com.example.springboot;
 
+import com.fasterxml.jackson.databind.node.BigIntegerNode;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.web3j.protocol.core.RemoteFunctionCall;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple2;
+import org.web3j.utils.Convert;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -64,17 +66,14 @@ public class MarketController {
         NumberService contract = singleton.getContract();
 
         List result = contract.seeOwnedNumbers().send();
-        System.out.println(result);
-
         if ( result.isEmpty() ) {
             String randomID = AccountController.getRandomIdentifier("000");
-            contract.buyNumber(randomID, new BigInteger("10")).send();
+            contract.buyNumber(
+                    randomID,
+                    Convert.toWei("1", Convert.Unit.ETHER).toBigInteger()
+            ).send();
         }
-        System.out.println("Buying number" + number.toString());
-
         BigInteger price = contract.seePriceOfListedNumber(number).send();
-
-        System.out.println("PRICE " + price);
         contract.buyNumber(number, price).send();
 
         return "market";
@@ -93,12 +92,17 @@ public class MarketController {
 
         if ( result.isEmpty() ) {
             String randomID = AccountController.getRandomIdentifier("000");
-            contract.buyNumber(randomID, new BigInteger("10")).send();
+            contract.buyNumber(
+                    randomID,
+                    Convert.toWei("1", Convert.Unit.ETHER).toBigInteger()
+            ).send();
         }
 
 
-        TransactionReceipt receipt = contract.buyNumber(number, new BigInteger("10")).send();
-        System.out.println(receipt);
+        contract.buyNumber(
+                number,
+                Convert.toWei("1", Convert.Unit.ETHER).toBigInteger()
+        ).send();
 
         return "redirect:/account/numbers";
     }
@@ -113,27 +117,29 @@ public class MarketController {
 
         if ( result.isEmpty() ) {
             String randomID = AccountController.getRandomIdentifier("000");
-            TransactionReceipt receipt = contract.buyNumber(randomID, new BigInteger("10")).send();
-            System.out.println(receipt);
+            contract.buyNumber(
+                    randomID,
+                    Convert.toWei("1", Convert.Unit.ETHER).toBigInteger()
+            ).send();
         }
 
         Tuple2<BigInteger, BigInteger> info = contract.rentGetInformationOnNumber(number).send();
 
-        TransactionReceipt receipt = contract.rentNumber(
+        BigInteger price = Convert.toWei(
+                Convert.fromWei(info.component1().toString(), Convert.Unit.ETHER).toBigInteger()
+                        .multiply(new BigInteger("360"))
+                        .add(new BigInteger("1"))
+                        .toString(),
+                Convert.Unit.ETHER
+        ).toBigInteger();
+
+        contract.rentNumber(
                 number,
-                info.component1(),
-                info.component2()
+                new BigInteger("3600"),
+                price
         ).send();
-        System.out.println(receipt);
 
         return "redirect:/account/numbers";
-    }
-
-    @PostMapping("/market/phone-number/rent/my-choice")
-    public String rentNumberOfMyChoice(Model model, @RequestParam String number) {
-        // TODO
-
-        return "market";
     }
 
     private class NumberForSaleOrRent {
