@@ -68,7 +68,6 @@ public class AuctionController {
 	@PostMapping("/auction/off")
 	public String offNumber(Model model,
 							 @RequestParam String number,
-							 @RequestParam int price,
 							 @RequestParam("deadline") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime deadline
 	) throws Exception {
 		Singleton singleton = Singleton.getInstance();
