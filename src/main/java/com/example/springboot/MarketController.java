@@ -10,6 +10,8 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple2;
 
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,12 +42,12 @@ public class MarketController {
 
         for (Object number : phoneNumbersForSale) {
             BigInteger price = contract.seePriceOfListedNumber(number.toString()).send();
-            forSale.add(new NumberForSaleOrRent(number.toString(), price, BigInteger.valueOf(0)));
+            forSale.add(new NumberForSaleOrRent(number.toString(), price, LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC)));
         }
 
         for (Object number : phoneNumbersForRent) {
             Tuple2<BigInteger, BigInteger> info = contract.rentGetInformationOnNumber(number.toString()).send();
-            forRent.add(new NumberForSaleOrRent(number.toString(), info.getValue1(), info.getValue2()));
+            forRent.add(new NumberForSaleOrRent(number.toString(), info.getValue1().divide(BigInteger.valueOf(24 * 60 * 60)), LocalDateTime.ofEpochSecond(info.getValue2().intValue(), 0, ZoneOffset.UTC)));
         }
 
         model.addAttribute("phoneNumbersForSale", forSale);
@@ -117,9 +119,9 @@ public class MarketController {
     private class NumberForSaleOrRent {
         public String phoneNumber;
         public BigInteger price;
-        public BigInteger endTimestamp;
+        public LocalDateTime endTimestamp;
 
-        public NumberForSaleOrRent(String phoneNumber, BigInteger price, BigInteger endTimestamp) {
+        public NumberForSaleOrRent(String phoneNumber, BigInteger price, LocalDateTime endTimestamp) {
             this.phoneNumber = phoneNumber;
             this.price = price;
             this.endTimestamp = endTimestamp; // some random deadline
