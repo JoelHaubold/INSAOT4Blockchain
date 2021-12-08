@@ -35,6 +35,11 @@
         </div>
         <div id="numbers" class="tab-pane fade" th:classappend="${tab} == 'numbers' ? 'active show' : ''">
             <div class="pt-3">
+                <p class="text-white">Give back rented number</p>
+                <form class="form-inline my-2 my-lg-0" th:action="@{/account/rent/give-back}" method="post">
+                    <input th:name="number" class="form-control mr-sm-2" type="text" placeholder="Phone number..." aria-label="Phone number...">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Finish auction and get the number!</button>
+                </form>
                 <table class="table table-dark">
                     <thead>
                     <tr>

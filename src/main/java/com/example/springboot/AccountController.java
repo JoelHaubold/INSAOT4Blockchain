@@ -4,6 +4,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.view.RedirectView;
 import org.web3j.utils.Convert;
@@ -172,6 +173,27 @@ public class AccountController {
 		}
 		model.addAttribute("phoneNumbers", phoneNumbers.stream().filter(n -> !n.startsWith("000_")).collect(Collectors.toList()));
 		model.addAttribute("tab", "numbers");
+		return "account";
+	}
+
+	@PostMapping("/account/rent/give-back")
+	public String giveBackRented(Model model,
+					  @RequestParam String number) throws Exception {
+		Singleton singleton = Singleton.getInstance();
+		NumberService contract = singleton.getContract();
+
+		contract.rentEndInstance(number).send();
+
+		List result = contract.seeOwnedNumbers().send();
+		ArrayList<String> phoneNumbers = new ArrayList<>();
+		System.out.println(result);
+		if (result.size() >= 1) {
+			phoneNumbers.addAll((List<String>) result);
+			phoneNumbers.remove(0);
+		}
+		model.addAttribute("phoneNumbers", phoneNumbers.stream().filter(n -> !n.startsWith("000_")).collect(Collectors.toList()));
+		model.addAttribute("tab", "numbers");
+
 		return "account";
 	}
 
