@@ -9,7 +9,7 @@ import org.web3j.tx.gas.DefaultGasProvider;
 public final class Singleton {
     private static Singleton instance;
 
-    private static final String CONTRACT_ADDRESS = "0xda2db3aa26578798502986c63154b46f01a6a7c0"; // TODO: change accordingly
+    private static final String CONTRACT_ADDRESS = "0xe08a80321497b60cfcdea05fca04faacb42ccde4"; // TODO: change accordingly
 
     private static final String SOURCE = System.getenv("SOURCE");
     private static final String SOURCE_PASSWORD = System.getenv("SOURCE_PASSWORD");

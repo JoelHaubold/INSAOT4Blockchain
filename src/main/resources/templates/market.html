@@ -34,7 +34,7 @@
                             <th scope="row" th:text="${number.phoneNumber}"></th>
                             <td th:text="${number.price}"></td>
                             <td>
-                                <form th:action="@{/market/phone-number/buy/{number}(number=${number})}" method="post">
+                                <form th:action="@{/market/phone-number/buy/{number}(number=${number.phoneNumber})}" method="post">
                                     <button class="btn btn-sm btn-outline-success my-2 my-sm-0" type="submit">Buy</button>
                                 </form>
                             </td>
@@ -69,7 +69,7 @@
                             <td th:text="${number.price}"></td>
                             <td th:text="${number.endTimestamp}"></td>
                             <td>
-                                <form th:action="@{/market/phone-number/rent/{number}(number=${number})}" method="post">
+                                <form th:action="@{/market/phone-number/rent/{number}(number=${number.phoneNumber})}" method="post">
                                     <button class="btn btn-sm btn-outline-success my-2 my-sm-0" type="submit">Rent</button>
                                 </form>
                             </td>

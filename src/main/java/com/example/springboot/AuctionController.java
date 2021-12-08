@@ -16,6 +16,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class AuctionController {
@@ -112,7 +113,7 @@ public class AuctionController {
 			auctionItems.add(new AuctionItem(numberAsString, value.getValue1(), LocalDateTime.ofEpochSecond(value.getValue2().intValue(), 0, ZoneOffset.UTC)));
 		}
 
-		model.addAttribute("myPhoneNumbers", myPhoneNumbers);
+		model.addAttribute("myPhoneNumbers", myPhoneNumbers.stream().filter(n -> !n.startsWith("000_")).collect(Collectors.toList()));
 		model.addAttribute("auctionItems", auctionItems);
 		model.addAttribute("myAddress", "myAddress");
 	}

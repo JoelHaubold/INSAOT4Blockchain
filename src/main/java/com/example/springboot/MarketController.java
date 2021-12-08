@@ -48,7 +48,7 @@ public class MarketController {
 
         for (Object number : phoneNumbersForRent) {
             Tuple2<BigInteger, BigInteger> info = contract.rentGetInformationOnNumber(number.toString()).send();
-            forRent.add(new NumberForSaleOrRent(number.toString(), info.getValue1().divide(BigInteger.valueOf(24 * 60 * 60)), LocalDateTime.ofEpochSecond(info.getValue2().intValue(), 0, ZoneOffset.UTC)));
+            forRent.add(new NumberForSaleOrRent(number.toString(), info.component1().divide(BigInteger.valueOf(24 * 60 * 60)), LocalDateTime.ofEpochSecond(info.component1().intValue(), 0, ZoneOffset.UTC)));
         }
 
         model.addAttribute("phoneNumbersForSale", forSale);
@@ -64,15 +64,20 @@ public class MarketController {
         NumberService contract = singleton.getContract();
 
         List result = contract.seeOwnedNumbers().send();
+        System.out.println(result);
 
         if ( result.isEmpty() ) {
             String randomID = AccountController.getRandomIdentifier("000");
             contract.buyNumber(randomID, new BigInteger("10")).send();
         }
+        System.out.println("Buying number" + number.toString());
 
-        contract.buyNumber(number, contract.seePriceOfListedNumber(number).send()).send();
+        BigInteger price = contract.seePriceOfListedNumber(number).send();
 
-        return "redirect:/account/numbers";
+        System.out.println("PRICE " + price);
+        contract.buyNumber(number, price).send();
+
+        return "market";
     }
 
     @PostMapping("/market/phone-number/buy/my-choice")
