@@ -37,8 +37,8 @@
                         </div>
                         <div id="collapseTwo" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
                             <div class="card-body">
-                                <p>If your auction is over you can finish it here:</p>
-                                <form class="form-inline my-2 my-lg-0" th:action="@{/auction/end/{number}(number=${number})}" method="post">
+                                <p class="text-white">If your auction is over you can finish it here:</p>
+                                <form class="form-inline my-2 my-lg-0" th:action="@{/auction/end/}" method="post">
                                     <input th:name="number" class="form-control mr-sm-2" type="text" placeholder="Phone number..." aria-label="Phone number...">
                                     <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Finish auction and get the number!</button>
                                 </form>

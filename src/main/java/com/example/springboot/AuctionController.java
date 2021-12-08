@@ -91,9 +91,9 @@ public class AuctionController {
 		return "auction";
 	}
 
-	@PostMapping("/auction/end/{number}")
+	@PostMapping("/auction/end/")
 	public String end(Model model,
-					  @PathVariable String number) throws Exception {
+					  @RequestParam String number) throws Exception {
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
 
