@@ -322,11 +322,11 @@ contract numberService {
     }
 
     function getAvailableForAuctionOrRentOrSaleNumbers() view external returns (string[] memory) {
-        ownedNumbers = owner2account[msg.sender].ownedNumbers;
-        string[] availableForAuctionOrRentOrSaleNumbers;
+        string[] memory ownedNumbers = owner2account[msg.sender].ownedNumbers;
+        string[] memory availableForAuctionOrRentOrSaleNumbers = new string[](ownedNumbers.length);
         for (uint i = 0; i < ownedNumbers.length; i++) {
             if(number2numberInformation[ownedNumbers[i]].isBeingRentedOrAuctionedOrListed) {
-                availableForAuctionOrRentOrSaleNumbers.push(ownedNumbers[i]);
+                availableForAuctionOrRentOrSaleNumbers[i] = ownedNumbers[i];
             }
         }
         return availableForAuctionOrRentOrSaleNumbers;

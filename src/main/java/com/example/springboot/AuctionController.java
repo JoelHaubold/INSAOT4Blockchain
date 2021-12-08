@@ -22,7 +22,6 @@ public class AuctionController {
 
 	@GetMapping("/auction")
 	public String showAuctionInfo(Model model) throws Exception {
-		//TODO: replace with real data
 		addDataToModel(model);
 		model.addAttribute("tab", "home");
 
@@ -31,7 +30,6 @@ public class AuctionController {
 
 	@GetMapping("/auction/buy")
 	public String showAuctionItems(Model model) throws Exception {
-		//TODO: replace with real data
 		addDataToModel(model);
 		model.addAttribute("tab", "buy");
 
@@ -51,7 +49,11 @@ public class AuctionController {
 	public String bid(Model model,
 							 @PathVariable int number,
 							 @RequestParam int bid) throws Exception {
-		//TODO: replace with logic
+		Singleton singleton = Singleton.getInstance();
+		NumberService contract = singleton.getContract();
+
+		contract.auctionBid(String.valueOf(number), new BigInteger(String.valueOf(bid))).send();
+
 		addDataToModel(model);
 		model.addAttribute("tab", "buy");
 
@@ -68,6 +70,13 @@ public class AuctionController {
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
 		long duration = ChronoUnit.SECONDS.between(LocalDateTime.now(), deadline);
+
+		if (contract.auctionSeeAvailable().send().isEmpty()) {
+			String randomID = AccountController.getRandomIdentifier("000");
+			contract.buyNumber(randomID, new BigInteger("10")).send();
+			contract.auctionStart(randomID, new BigInteger("100000")).send();
+		}
+
 		contract.auctionStart(number, BigInteger.valueOf(duration)).send();
 		addDataToModel(model);
 		model.addAttribute("tab", "sell");
@@ -78,6 +87,7 @@ public class AuctionController {
 	private void addDataToModel(Model model) throws Exception {
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
+
 //		TODO: replace getNumbersAvailableForSaleOrRentOrAuction
 		List result = contract.seeOwnedNumbers().send();
 		ArrayList<String> myPhoneNumbers = new ArrayList<>();
@@ -88,6 +98,13 @@ public class AuctionController {
 
 		List<AuctionItem> auctionItems = new ArrayList<>();
 		List available = contract.auctionSeeAvailable().send();
+
+		if (available.size() >= 1) {
+			available.remove(0);
+		}
+
+		System.out.println(available);
+
 		for (Object number : available) {
 			String numberAsString = number.toString();
 			// First value is highest bid, second is timestamp

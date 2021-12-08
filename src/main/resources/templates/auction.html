@@ -54,7 +54,7 @@
                                         <td th:text="${item.deadline}"></td>
                                         <td>
                                             <form th:action="@{/auction/bid/{number}(number=${item.phoneNumber})}" method="post">
-                                                <input type="number" th:name="item" id="bid"/>
+                                                <input type="number" th:name="bid" id="bid"/>
                                                 <label class="form-check-label" for="bid">
                                                     ETH
                                                 </label>

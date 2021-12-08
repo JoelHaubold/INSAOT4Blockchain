@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.web3j.protocol.core.RemoteFunctionCall;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple2;
 
@@ -59,10 +60,6 @@ public class MarketController {
 
     @PostMapping("/market/phone-number/buy/{number}")
     public String buyNumber(Model model, @PathVariable(value="number") String number) throws Exception {
-        if ( ! pattern.matcher(number).matches() ) {
-            return "market";
-        }
-
         Singleton singleton = Singleton.getInstance();
         NumberService contract = singleton.getContract();
 
@@ -91,8 +88,7 @@ public class MarketController {
 
         if ( result.isEmpty() ) {
             String randomID = AccountController.getRandomIdentifier("000");
-            TransactionReceipt receipt = contract.buyNumber(randomID, new BigInteger("10")).send();
-            System.out.println(receipt);
+            contract.buyNumber(randomID, new BigInteger("10")).send();
         }
 
 
@@ -103,8 +99,27 @@ public class MarketController {
     }
 
     @PostMapping("/market/phone-number/rent/{number}")
-    public String rentNumber(Model model, @PathVariable(value="number") String number) {
-        // TODO
+    public String rentNumber(Model model, @PathVariable(value="number") String number) throws Exception {
+        //CANNOT BE IMPLEMENTED
+        Singleton singleton = Singleton.getInstance();
+        NumberService contract = singleton.getContract();
+
+        List result = contract.seeOwnedNumbers().send();
+
+        if ( result.isEmpty() ) {
+            String randomID = AccountController.getRandomIdentifier("000");
+            TransactionReceipt receipt = contract.buyNumber(randomID, new BigInteger("10")).send();
+            System.out.println(receipt);
+        }
+
+        Tuple2<BigInteger, BigInteger> info = contract.rentGetInformationOnNumber(number).send();
+
+        TransactionReceipt receipt = contract.rentNumber(
+                number,
+                info.component1(),
+                info.component2()
+        ).send();
+        System.out.println(receipt);
 
         return "redirect:/account/numbers";
     }
