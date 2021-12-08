@@ -197,6 +197,27 @@ public class AccountController {
 		return "account";
 	}
 
+	@PostMapping("/account/rent/get-back")
+	public String getBackRented(Model model,
+								 @RequestParam String number) throws Exception {
+		Singleton singleton = Singleton.getInstance();
+		NumberService contract = singleton.getContract();
+
+		contract.rentEndAvailability(number).send();
+
+		List result = contract.seeOwnedNumbers().send();
+		ArrayList<String> phoneNumbers = new ArrayList<>();
+		System.out.println(result);
+		if (result.size() >= 1) {
+			phoneNumbers.addAll((List<String>) result);
+			phoneNumbers.remove(0);
+		}
+		model.addAttribute("phoneNumbers", phoneNumbers.stream().filter(n -> !n.startsWith("000_")).collect(Collectors.toList()));
+		model.addAttribute("tab", "numbers");
+
+		return "account";
+	}
+
 	static String getRandomIdentifier(String beginning) throws Exception {
 		int leftLimit = 48; // numeral '0'
 		int rightLimit = 122; // letter 'z'
