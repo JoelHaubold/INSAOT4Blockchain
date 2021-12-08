@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.view.RedirectView;
+import org.web3j.utils.Convert;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -27,7 +28,24 @@ public class AccountController {
 	public String showAccountDetails(Model model) throws Exception {
 		Singleton singleton = Singleton.getInstance();
 		String accountAddress = singleton.getCredentials().getAddress();
-		String nickname = "Fat Cat";
+		NumberService contract = singleton.getContract();
+
+		List result = contract.seeOwnedNumbers().send();
+		ArrayList<String> phoneNumbers = new ArrayList<>();
+		if (result.size() >= 1) {
+			phoneNumbers.addAll((List<String>) result);
+			phoneNumbers.remove(0);
+		}
+		StringBuilder str = new StringBuilder();
+		for (String number : phoneNumbers.stream().filter(n -> !n.startsWith("000_")).collect(Collectors.toList())) {
+			String nickname = contract.getNicknameForNumber(number).send();
+			str.append(number);
+			str.append(": ");
+			str.append(nickname);
+			str.append(", ");
+		}
+		str.append("\b\b");
+		String nickname = str.toString();
 
 
 		model.addAttribute("accountAddress", accountAddress);
@@ -74,18 +92,21 @@ public class AccountController {
 
 		if (contract.rentSeeAvailableNumbers().send().isEmpty()) {
 			String randomID = getRandomIdentifier("000");
-			contract.buyNumber(randomID, new BigInteger("10")).send();
+			contract.buyNumber(
+					randomID,
+					Convert.toWei("1", Convert.Unit.ETHER).toBigInteger()
+			).send();
 			contract.rentMakeNumberAvailable(
 					randomID,
-					new BigInteger("100000"),
-					new BigInteger("1")
+					new BigInteger("1"),
+					new BigInteger("3600")
 			).send();
 		}
 
 		contract.rentMakeNumberAvailable(
 				number,
-				new BigInteger(String.valueOf(60*60*24*days)),
-				new BigInteger(String.valueOf(price))
+				new BigInteger(String.valueOf(price)),
+				new BigInteger(String.valueOf(60*60*24*days))
 		).send();
 
 		List result = contract.seeOwnedNumbers().send();
@@ -103,11 +124,14 @@ public class AccountController {
 
 	@GetMapping("/account/set-nickname/{number}")
 	public String setNickname(Model model, @PathVariable(value="number") String number, @RequestParam String nickname) throws Exception {
-		//TODO: actually rent the NR
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
 
-		contract.buyNickname(nickname, number, BigInteger.valueOf(10)).send();
+		contract.buyNickname(
+				nickname,
+				number,
+				Convert.toWei("10", Convert.Unit.ETHER).toBigInteger()
+		).send();
 
 		List result = contract.seeOwnedNumbers().send();
 		ArrayList<String> phoneNumbers = new ArrayList<>();
@@ -124,18 +148,21 @@ public class AccountController {
 
 	@GetMapping("/account/sell-my-number/{number}")
 	public String sellMyNumber(Model model, @PathVariable(value="number") String number, @RequestParam int price) throws Exception {
-		//TODO: actually sell the NR
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
 
 		if (contract.seeListedNumbers().send().isEmpty()) {
 			System.out.println("Its empty");
 			String randomID = getRandomIdentifier("000");
-			contract.buyNumber(randomID, new BigInteger("10")).send();
+			contract.buyNumber(
+					randomID,
+					Convert.toWei("1", Convert.Unit.ETHER).toBigInteger()
+			).send();
 			contract.listNumber(randomID, new BigInteger("1")).send();
 		}
 
 		contract.listNumber(number, new BigInteger(String.valueOf(price))).send();
+
 		List result = contract.seeOwnedNumbers().send();
 		ArrayList<String> phoneNumbers = new ArrayList<>();
 		System.out.println(result);
