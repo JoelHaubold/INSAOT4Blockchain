@@ -8,9 +8,9 @@ import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.DefaultGasProvider;
 
 public class DeploySmartContract {
-    static final String ROOT_DIR = "/home/abarahonar/.ethereum/lyonnaiseBlockchain/keystore/";
-    static final String SOURCE = "UTC--2021-11-23T09-41-30.479619005Z--0dcb0f7497dcf5eeba1b0f2bf3290a633d4a85c3";
-    static final String SOURCE_PASSWORD = "natasha";
+    static final String ROOT_DIR = "/home/natalia/.ethereum/alanIsJopa/keystore/";
+    static final String SOURCE = "UTC--2021-11-23T09-41-28.990398930Z--399b0e69d8a1a4162fd3a93cd95b26c455c352a9";
+    static final String SOURCE_PASSWORD = "alanIsJopa";
 
 
     public static void main(String[] args) throws Exception {

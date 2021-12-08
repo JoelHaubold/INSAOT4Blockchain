@@ -92,6 +92,20 @@ public class AuctionController {
 		return "auction";
 	}
 
+	@PostMapping("/auction/end/{number}")
+	public String end(Model model,
+					  @PathVariable String number) throws Exception {
+		Singleton singleton = Singleton.getInstance();
+		NumberService contract = singleton.getContract();
+
+		contract.auctionEnd(number).send();
+
+		addDataToModel(model);
+		model.addAttribute("tab", "buy");
+
+		return "auction";
+	}
+
 	private void addDataToModel(Model model) throws Exception {
 		Singleton singleton = Singleton.getInstance();
 		NumberService contract = singleton.getContract();
