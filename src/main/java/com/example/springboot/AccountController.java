@@ -54,17 +54,6 @@ public class AccountController {
 		return "account";
 	}
 
-	@GetMapping("/account/transactions")
-	public String showTransactions(Model model) {
-		// Undoable
-		String[] transactions = {"t1", "t2", "t3"};
-
-		model.addAttribute("transactions", transactions);
-		model.addAttribute("tab", "transactions");
-
-		return "account";
-	}
-
 	@GetMapping("/account/balance")
 	public String showBalance(Model model) throws Exception {
 		//TODO: replace with real data
@@ -99,6 +88,27 @@ public class AccountController {
 				new BigInteger(String.valueOf(60*60*24*days)),
 				new BigInteger(String.valueOf(price))
 		).send();
+
+		List result = contract.seeOwnedNumbers().send();
+		ArrayList<String> phoneNumbers = new ArrayList<>();
+		System.out.println(result);
+		if (result.size() >= 1) {
+			phoneNumbers.addAll((List<String>) result);
+			phoneNumbers.remove(0);
+		}
+		model.addAttribute("phoneNumbers", phoneNumbers.stream().filter(n -> !n.startsWith("000_")).collect(Collectors.toList()));
+		model.addAttribute("tab", "numbers");
+
+		return "account";
+	}
+
+	@GetMapping("/account/set-nickname/{number}")
+	public String setNickname(Model model, @PathVariable(value="number") String number, @RequestParam String nickname) throws Exception {
+		//TODO: actually rent the NR
+		Singleton singleton = Singleton.getInstance();
+		NumberService contract = singleton.getContract();
+
+		contract.buyNickname(nickname, number, BigInteger.valueOf(10)).send();
 
 		List result = contract.seeOwnedNumbers().send();
 		ArrayList<String> phoneNumbers = new ArrayList<>();

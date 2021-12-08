@@ -16,9 +16,6 @@
         <li class="nav-item" th:classappend="${tab} == 'numbers' ? 'active show ' : ''" role="presentation">
             <a class="nav-link" role="tab"  href="/account/numbers"> My phone numbers</a>
         </li>
-        <li class="nav-item" th:classappend="${tab} == 'transactions' ? 'active show ' : ''" role="presentation">
-            <a class="nav-link" role="tab"  href="/account/transactions">My transactions</a>
-        </li>
         <li class="nav-item" th:classappend="${tab} == 'balance' ? 'active show ' : ''" role="presentation">
             <a class="nav-link" role="tab"  href="/account/balance">My balance </a>
         </li>
@@ -37,13 +34,14 @@
             </div>
         </div>
         <div id="numbers" class="tab-pane fade" th:classappend="${tab} == 'numbers' ? 'active show' : ''">
-            <div class="pt-5">
+            <div class="pt-3">
                 <table class="table table-dark">
                     <thead>
                     <tr>
                         <th scope="col">Nr</th>
                         <th scope="col">Rent</th>
                         <th scope="col">Sell</th>
+                        <th scope="col">Set nickname</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -72,28 +70,16 @@
                                 </div>
                             </form>
                         </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div id="transactions" class="tab-pane fade" th:classappend="${tab} == 'transactions' ? 'active show' : ''">
-            <div class="pt-5">
-                <table class="table table-dark">
-                    <thead>
-                    <tr>
-                        <th scope="col">Nr</th>
-                        <th scope="col">Price</th>
-                        <th scope="col">Date</th>
-                        <th scope="col">More info</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="transaction: ${transactions}">
-                        <th scope="row" th:text="${transaction}">1</th>
-                        <td>Some info</td>
-                        <td>Some info</td>
-                        <td>Some info</td>
+                        <td>
+                            <form th:action="@{/account/set-nickname/{number}(number=${number})}" method="get">
+                                <div class="row">
+                                    <div class="col-lg-5">
+                                        <input type="text" th:name="nickname" class="form-control form-control-sm" placeholder="Nickname">
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-success my-2 my-sm-0" type="submit">Set for 10 WEI!</button>
+                                </div>
+                            </form>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

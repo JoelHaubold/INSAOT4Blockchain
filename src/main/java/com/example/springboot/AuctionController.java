@@ -11,6 +11,7 @@ import org.web3j.tuples.generated.Tuple2;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,7 +92,7 @@ public class AuctionController {
 			String numberAsString = number.toString();
 			// First value is highest bid, second is timestamp
 			Tuple2<BigInteger, BigInteger> value = contract.auctionGetInformation(numberAsString).send();
-			auctionItems.add(new AuctionItem(numberAsString, value.getValue1(), value.getValue2()));
+			auctionItems.add(new AuctionItem(numberAsString, value.getValue1(), LocalDateTime.ofEpochSecond(value.getValue2().intValue(), 0, ZoneOffset.UTC)));
 		}
 
 		model.addAttribute("myPhoneNumbers", myPhoneNumbers);
@@ -103,11 +104,11 @@ public class AuctionController {
 	private class AuctionItem {
 		public String phoneNumber;
 		public BigInteger highestBid;
-		public BigInteger deadline;
+		public LocalDateTime deadline;
 		public String highestBidUserAddress;
 		public List<String> competingUserAdresses = new ArrayList<>();
 
-		public AuctionItem(String phoneNumber, BigInteger highestBid, BigInteger deadline) {
+		public AuctionItem(String phoneNumber, BigInteger highestBid, LocalDateTime deadline) {
 			this.phoneNumber = phoneNumber;
 			this.highestBid = highestBid;
 			this.deadline = deadline; // some random deadline
